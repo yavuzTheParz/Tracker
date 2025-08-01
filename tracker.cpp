@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iomanip>
 #include <filesystem>
+#include <set>
 
 namespace fs = std::filesystem;
 
@@ -200,42 +202,6 @@ void mergeRawData() {
     }
 }
 
-// Progress bar for each user
-void showProgress(const std::vector<std::string>& users, int totalPapersPerUser) {
-    const int barWidth = 15;
-    // Find max user name length for alignment
-    size_t maxUserLen = 0;
-    for (const auto& user : users) {
-        maxUserLen = std::max(maxUserLen, user.size());
-    }
-
-    for (const auto& user : users) {
-        std::ifstream file(getUserFile(user));
-        int paperCount = 0, ideaCount = 0;
-        std::string line, type;
-        bool inBlock = false;
-
-        while (std::getline(file, line)) {
-            if (line == "---") {
-                type.clear();
-                inBlock = true;
-            } else if (inBlock && line.rfind("Type: ", 0) == 0) {
-                type = line.substr(6);
-                if (type == "paper") paperCount++;
-                else if (type == "idea") ideaCount++;
-                inBlock = false; // type is always right after ---
-            }
-        }
-        // Bar for papers only
-        int filledPaper = (totalPapersPerUser > 0) ? (paperCount * barWidth) / totalPapersPerUser : 0;
-        std::cout << std::left << std::setw(maxUserLen + 2) << user << " Papers: [";
-        for (int i = 0; i < barWidth; i++) {
-            std::cout << (i < filledPaper ? "#" : " ");
-        }
-        std::cout << "] " << paperCount << "/" << totalPapersPerUser << " | Ideas: " << ideaCount << "\n";
-    }
-}
-
 // List all titles for a user (paper & idea)
 void listUserTitles(const std::string& user) {
     std::ifstream in(getUserFile(user));
@@ -348,6 +314,173 @@ void listAllTitles() {
     }
 }
 
+// --- VIDEO SYSTEM ---
+
+std::string getVideosFile() { return "videos.txt"; }
+
+// Add a new video
+void addVideo(const std::string& title, const std::string& url) {
+    std::ofstream file(getVideosFile(), std::ios::app);
+    file << "---\n";
+    file << "Title: " << title << "\n";
+    file << "URL: " << url << "\n";
+}
+
+// Get total videos count
+int getTotalVideos() {
+    std::ifstream file(getVideosFile());
+    std::string line;
+    int count = 0;
+    while (std::getline(file, line)) {
+        if (line == "---") count++;
+    }
+    return count;
+}
+
+// Get watched videos for user
+std::set<int> getUserWatchedVideos(const std::string& user) {
+    std::ifstream file(getUserFile(user));
+    std::string line, type;
+    std::set<int> watched;
+    bool inBlock = false;
+    while (std::getline(file, line)) {
+        if (line == "---") {
+            type.clear();
+            inBlock = true;
+        } else if (inBlock && line.rfind("Type: ", 0) == 0) {
+            type = line.substr(6);
+        } else if (inBlock && type == "videos" && line.rfind("Videos: ", 0) == 0) {
+            std::string nums = line.substr(8);
+            std::stringstream ss(nums);
+            std::string idx;
+            while (std::getline(ss, idx, ',')) {
+                try {
+                    int v = std::stoi(idx);
+                    watched.insert(v);
+                } catch (...) {}
+            }
+            inBlock = false;
+        }
+    }
+    return watched;
+}
+
+// Mark video as watched for a user (by index)
+void watchVideo(const std::string& user, int index) {
+    // Read all lines, update videos block or add if not exists
+    std::ifstream file(getUserFile(user));
+    std::vector<std::string> lines;
+    std::string line;
+    bool updated = false;
+    bool inBlock = false;
+    std::string type;
+    while (std::getline(file, line)) {
+        if (line == "---") {
+            lines.push_back(line);
+            type.clear();
+            inBlock = true;
+        } else if (inBlock && line.rfind("Type: ", 0) == 0) {
+            type = line.substr(6);
+            lines.push_back(line);
+            if (type == "videos") {
+                std::getline(file, line); // Videos: ...
+                if (line.rfind("Videos: ", 0) == 0) {
+                    std::string nums = line.substr(8);
+                    std::set<int> watched;
+                    std::stringstream ss(nums);
+                    std::string idx;
+                    while (std::getline(ss, idx, ',')) {
+                        try {
+                            watched.insert(std::stoi(idx));
+                        } catch (...) {}
+                    }
+                    watched.insert(index);
+                    std::string newLine = "Videos: ";
+                    int i = 0;
+                    for (int v : watched) {
+                        if (i > 0) newLine += ",";
+                        newLine += std::to_string(v);
+                        i++;
+                    }
+                    lines.push_back(newLine);
+                    updated = true;
+                } else {
+                    lines.push_back("Videos: " + std::to_string(index));
+                    updated = true;
+                }
+                inBlock = false;
+            }
+        } else {
+            lines.push_back(line);
+        }
+    }
+    file.close();
+
+    if (!updated) {
+        lines.push_back("---");
+        lines.push_back("Type: videos");
+        lines.push_back("Videos: " + std::to_string(index));
+    }
+
+    std::ofstream out(getUserFile(user));
+    for (auto& l : lines) out << l << "\n";
+    std::cout << "Marked as watched.\n";
+}
+
+// List all videos with their indices
+void listAllVideos() {
+    std::ifstream file(getVideosFile());
+    std::string line, title, url;
+    int idx = -1;
+    bool inBlock = false;
+    while (std::getline(file, line)) {
+        if (line == "---") {
+            idx++;
+            title.clear();
+            url.clear();
+            inBlock = true;
+        } else if (inBlock && line.rfind("Title: ", 0) == 0) {
+            title = line.substr(7);
+        } else if (inBlock && line.rfind("URL: ", 0) == 0) {
+            url = line.substr(5);
+        } else if (!title.empty() && !url.empty()) {
+            std::cout << "[" << idx << "] " << title << " (" << url << ")\n";
+            inBlock = false;
+        }
+    }
+}
+
+// Progress bar örneği ile birlikte:
+void showProgress(const std::vector<std::string>& users, int totalPapersPerUser) {
+    const int barWidth = 15;
+    size_t maxUserLen = 0;
+    for (const auto& user : users) maxUserLen = std::max(maxUserLen, user.size());
+    int totalVideos = getTotalVideos();
+
+    for (const auto& user : users) {
+        std::ifstream file(getUserFile(user));
+        int paperCount = 0, ideaCount = 0;
+        std::string line, type;
+        bool inBlock = false;
+        while (std::getline(file, line)) {
+            if (line == "---") { type.clear(); inBlock = true; }
+            else if (inBlock && line.rfind("Type: ", 0) == 0) {
+                type = line.substr(6);
+                if (type == "paper") paperCount++;
+                else if (type == "idea") ideaCount++;
+                inBlock = false;
+            }
+        }
+        auto watchedVideos = getUserWatchedVideos(user);
+        int filledPaper = (totalPapersPerUser > 0) ? (paperCount * barWidth) / totalPapersPerUser : 0;
+        std::cout << std::left << std::setw(maxUserLen + 2) << user << " Papers: [";
+        for (int i = 0; i < barWidth; i++) std::cout << (i < filledPaper ? "#" : " ");
+        std::cout << "] " << paperCount << "/" << totalPapersPerUser
+                  << " | Ideas: " << ideaCount
+                  << " | Videos: " << watchedVideos.size() << "/" << totalVideos << "\n";
+    }
+}
+
 int main() {
     std::vector<std::string> users = {"yavuz", "birdem", "emre"};
     int totalPapersPerUser = 15;
@@ -372,7 +505,7 @@ int main() {
                                                                          
 )" << std::endl;
     std::cout << "Commands: add_paper <user>, add_idea <user>, delete_paper <user> <index>, delete_idea <user> <index>, restore <title>, progress\n"
-                 "          list_all, list_user <user>, summary_of <title> [paper|idea], list_titles, list_trash, exit\n\n";
+                 "          list_all, list_user <user>, summary_of <title> [paper|idea], list_titles, list_trash, add_video <title> <url>, list_videos, watch_video <user> <index>, exit\n\n";
     while (true) {
         std::cout << "> ";
         std::getline(std::cin, input);
@@ -444,6 +577,24 @@ int main() {
         }
         else if (command == "list_trash") {
             listTrashTitles();
+        }
+
+        else if (command == "add_video") {
+            std::string title, url;
+            std::getline(iss >> std::ws, title, ' ');
+            iss >> url;
+            addVideo(title, url);
+        }
+
+        else if (command == "list_videos") {
+            listAllVideos();
+        }
+
+        else if (command == "watch_video") {
+            std::string user;
+            int index;
+            iss >> user >> index;
+            watchVideo(user, index);
         }
 
         else {
