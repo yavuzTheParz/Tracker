@@ -435,18 +435,22 @@ void listAllVideos() {
     bool inBlock = false;
     while (std::getline(file, line)) {
         if (line == "---") {
+            if (!title.empty() && !url.empty()) {
+                std::cout << "[" << idx << "] " << title << " (" << url << ")\n";
+            }
             idx++;
             title.clear();
             url.clear();
             inBlock = true;
         } else if (inBlock && line.rfind("Title: ", 0) == 0) {
-            title = line.substr(7);
+            title = line;
         } else if (inBlock && line.rfind("URL: ", 0) == 0) {
-            url = line.substr(5);
-        } else if (!title.empty() && !url.empty()) {
-            std::cout << "[" << idx << "] " << title << " (" << url << ")\n";
-            inBlock = false;
+            url = line;
         }
+    }
+    // Son blok için
+    if (!title.empty() && !url.empty()) {
+        std::cout << "[" << idx << "] " << title << " (" << url << ")\n";
     }
 }
 
@@ -505,7 +509,7 @@ int main() {
                                                                          
 )" << std::endl;
     std::cout << "Commands: add_paper <user>, add_idea <user>, delete_paper <user> <index>, delete_idea <user> <index>, restore <title>, progress\n"
-                 "          list_all, list_user <user>, summary_of <title> [paper|idea], list_titles, list_trash, add_video <title> <url>, list_videos, watch_video <user> <index>, exit\n\n";
+                 "          list_all, list_user <user>, summary_of <title> [paper|idea], list_titles, list_trash, add_video, list_videos, watch_video <user> <index>, exit\n\n";
     while (true) {
         std::cout << "> ";
         std::getline(std::cin, input);
@@ -579,12 +583,16 @@ int main() {
             listTrashTitles();
         }
 
-        else if (command == "add_video") {
-            std::string title, url;
-            std::getline(iss >> std::ws, title, ' ');
-            iss >> url;
-            addVideo(title, url);
-        }
+	else if (command == "add_video") {
+	    std::cout << "\nWrite title in quotes such as: \"Title of the video\" \n";
+	    std::string title, url;
+	    std::cout << "Enter video title: ";
+	    std::getline(std::cin, title);
+	    std::cout<<"Enter the URL: ";
+	    std::getline(std::cin, url);
+
+	    addVideo(title, url);
+	}
 
         else if (command == "list_videos") {
             listAllVideos();
