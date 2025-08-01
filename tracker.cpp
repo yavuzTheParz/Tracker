@@ -13,26 +13,28 @@ std::string getUserFile(const std::string& user) {
     return "rawdata_" + user + ".txt";
 }
 
-// Write entry to user's file
-void writeEntry(const std::string& user, const std::string& title, const std::string& summary) {
+// Write entry to user's file (for paper or idea)
+void writeEntry(const std::string& user, const std::string& type, const std::string& title, const std::string& summary) {
     std::ofstream file(getUserFile(user), std::ios::app);
     file << "---\n";
     file << "User: " << user << "\n";
+    file << "Type: " << type << "\n";
     file << "Title: " << title << "\n";
     file << "Summary: " << summary << "\n";
 }
 
-void deleteEntry(const std::string& user, int index) {
+// Delete entry (by index & type) from user's file, move to trash.txt
+void deleteEntry(const std::string& user, int index, const std::string& type = "") {
     std::string path = getUserFile(user);
     std::ifstream in(path);
     if (!in.is_open()) {
-        std::cout << "Dosya açılamadı.\n";
+        std::cout << "File could not be opened.\n";
         return;
     }
     std::ofstream out("temp.txt");
     std::ofstream trash("trash.txt", std::ios::app);
 
-    std::string line;
+    std::string line, entryType;
     int count = -1;
     bool inBlock = false;
     bool deleted = false;
@@ -41,7 +43,7 @@ void deleteEntry(const std::string& user, int index) {
     while (std::getline(in, line)) {
         if (line == "---") {
             if (inBlock) {
-                if (count == index) {
+                if (((type.empty() && count == index) || (type == entryType && count == index))) {
                     trash << entryBuffer.str();
                     deleted = true;
                 } else {
@@ -52,14 +54,18 @@ void deleteEntry(const std::string& user, int index) {
             }
             inBlock = true;
             count++;
+            entryType.clear();
         }
         if (inBlock) {
             entryBuffer << line << "\n";
+            if (line.rfind("Type: ", 0) == 0) {
+                entryType = line.substr(6);
+            }
         }
     }
-    // Son blok
+    // Last block
     if (!entryBuffer.str().empty()) {
-        if (count == index) {
+        if (((type.empty() && count == index) || (type == entryType && count == index))) {
             trash << entryBuffer.str();
             deleted = true;
         } else {
@@ -74,39 +80,43 @@ void deleteEntry(const std::string& user, int index) {
     fs::rename("temp.txt", path);
 
     if (deleted)
-        std::cout << "Silindi.\n";
+        std::cout << "Deleted.\n";
     else
-        std::cout << "Geçersiz index, silme işlemi yapılmadı.\n";
+        std::cout << "Invalid index, nothing deleted.\n";
 }
 
 void listTrashTitles() {
     std::ifstream trash("trash.txt");
     if (!trash.is_open()) {
-        std::cout << "trash.txt açılamadı veya yok.\n";
+        std::cout << "trash.txt could not be opened or does not exist.\n";
         return;
     }
-    std::string line, title;
+    std::string line, title, type;
     bool inBlock = false;
     bool foundAny = false;
     while (std::getline(trash, line)) {
         if (line == "---") {
             title.clear();
+            type.clear();
             inBlock = true;
         } else if (inBlock && line.rfind("Title: ", 0) == 0) {
             title = line.substr(7);
-            std::cout << "- " << title << "\n";
+        } else if (inBlock && line.rfind("Type: ", 0) == 0) {
+            type = line.substr(6);
+        } else if (!title.empty() && !type.empty()) {
+            std::cout << "- [" << type << "] " << title << "\n";
             foundAny = true;
-            inBlock = false; // Sadece ilk başlık satırını alır, aynı blokta tekrar aramaz
+            inBlock = false;
         }
     }
-    if (!foundAny) std::cout << "Trash boş.\n";
+    if (!foundAny) std::cout << "Trash is empty.\n";
 }
 
 // Restore entry from trash.txt by title
 void restoreFromTrash(const std::string& title) {
     std::ifstream trash("trash.txt");
     if (!trash.is_open()) {
-        std::cerr << "trash.txt açılamadı.\n";
+        std::cerr << "trash.txt could not be opened.\n";
         return;
     }
 
@@ -122,7 +132,7 @@ void restoreFromTrash(const std::string& title) {
                 if (currentBlockMatches && !username.empty()) {
                     std::ofstream userFile(getUserFile(username), std::ios::app);
                     if (userFile.is_open()) {
-                        std::cout << "Eşleşme bulundu, " << getUserFile(username) << " dosyasına restore ediliyor.\n";
+                        std::cout << "Match found, restoring to " << getUserFile(username) << ".\n";
                         userFile << currentBlock.str();
                         userFile.close();
                         matched = true;
@@ -150,12 +160,12 @@ void restoreFromTrash(const std::string& title) {
         }
     }
 
-    // Son blok için
+    // Last block
     if (!currentBlock.str().empty()) {
         if (currentBlockMatches && !username.empty()) {
             std::ofstream userFile(getUserFile(username), std::ios::app);
             if (userFile.is_open()) {
-                std::cout << "Eşleşme bulundu (son blok), " << getUserFile(username) << " dosyasına restore ediliyor.\n";
+                std::cout << "Match found (last block), restoring to " << getUserFile(username) << ".\n";
                 userFile << currentBlock.str();
                 matched = true;
             }
@@ -170,9 +180,9 @@ void restoreFromTrash(const std::string& title) {
     out.close();
 
     if (matched)
-        std::cout << "Restore tamamlandı.\n";
+        std::cout << "Restore completed.\n";
     else
-        std::cout << "Eşleşen başlık bulunamadı. Restore başarısız.\n";
+        std::cout << "No matching title found. Restore failed.\n";
 }
 
 // Merge all user rawdata files into data.txt
@@ -190,46 +200,83 @@ void mergeRawData() {
     }
 }
 
-// Show progress for each user
+// Progress bar for each user
 void showProgress(const std::vector<std::string>& users, int totalPapersPerUser) {
+    const int barWidth = 15;
+    // Find max user name length for alignment
+    size_t maxUserLen = 0;
+    for (const auto& user : users) {
+        maxUserLen = std::max(maxUserLen, user.size());
+    }
+
     for (const auto& user : users) {
         std::ifstream file(getUserFile(user));
-        int count = 0;
-        std::string line;
+        int paperCount = 0, ideaCount = 0;
+        std::string line, type;
+        bool inBlock = false;
+
         while (std::getline(file, line)) {
-            if (line == "---") count++;
+            if (line == "---") {
+                type.clear();
+                inBlock = true;
+            } else if (inBlock && line.rfind("Type: ", 0) == 0) {
+                type = line.substr(6);
+                if (type == "paper") paperCount++;
+                else if (type == "idea") ideaCount++;
+                inBlock = false; // type is always right after ---
+            }
         }
-        std::cout << user << ": " << count << "/" << totalPapersPerUser << "\n";
+        // Bar for papers only
+        int filledPaper = (totalPapersPerUser > 0) ? (paperCount * barWidth) / totalPapersPerUser : 0;
+        std::cout << std::left << std::setw(maxUserLen + 2) << user << " Papers: [";
+        for (int i = 0; i < barWidth; i++) {
+            std::cout << (i < filledPaper ? "#" : " ");
+        }
+        std::cout << "] " << paperCount << "/" << totalPapersPerUser << " | Ideas: " << ideaCount << "\n";
     }
 }
 
-// List all titles for a user
+// List all titles for a user (paper & idea)
 void listUserTitles(const std::string& user) {
     std::ifstream in(getUserFile(user));
-    std::string line;
+    std::string line, title, type;
+    bool inBlock = false;
     while (std::getline(in, line)) {
-        if (line.find("Title: ") == 0) {
-            std::cout << "- " << line.substr(7) << "\n";
+        if (line == "---") {
+            title.clear();
+            type.clear();
+            inBlock = true;
+        } else if (inBlock && line.rfind("Type: ", 0) == 0) {
+            type = line.substr(6);
+        } else if (inBlock && line.rfind("Title: ", 0) == 0) {
+            title = line.substr(7);
+            if (!type.empty()) {
+                std::cout << "- [" << type << "] " << title << "\n";
+            } else {
+                std::cout << "- " << title << "\n";
+            }
+            inBlock = false;
         }
     }
 }
 
 void listAllSummaries() {
     std::ifstream in("data.txt");
-    std::string line;
-    std::string title, summary;
+    std::string line, title, summary, type;
     bool inSummary = false;
-
     while (std::getline(in, line)) {
         if (line == "---") {
-            if (!title.empty() && !summary.empty()) {
-                std::cout << "- " << title << "\n" << summary << "\n";
+            if (!title.empty() && !summary.empty() && !type.empty()) {
+                std::cout << "- [" << type << "] " << title << "\n" << summary << "\n";
             }
             title.clear();
             summary.clear();
+            type.clear();
             inSummary = false;
         } else if (line.rfind("Title: ", 0) == 0) {
             title = line.substr(7);
+        } else if (line.rfind("Type: ", 0) == 0) {
+            type = line.substr(6);
         } else if (line.rfind("Summary: ", 0) == 0) {
             summary = line.substr(9) + "\n";
             inSummary = true;
@@ -237,29 +284,31 @@ void listAllSummaries() {
             summary += line + "\n";
         }
     }
-    // Son blok eklemesi
-    if (!title.empty() && !summary.empty()) {
-        std::cout << "- " << title << "\n" << summary << "\n";
+    // Last block
+    if (!title.empty() && !summary.empty() && !type.empty()) {
+        std::cout << "- [" << type << "] " << title << "\n" << summary << "\n";
     }
 }
 
-void showSummaryByTitle(const std::string& searchTitle) {
+void showSummaryByTitle(const std::string& searchTitle, const std::string& type = "") {
     std::ifstream in("data.txt");
-    std::string line, title, summary;
+    std::string line, title, summary, entryType;
     bool inSummary = false, found = false;
-
     while (std::getline(in, line)) {
         if (line == "---") {
-            if (title == searchTitle && !summary.empty()) {
-                std::cout << "Summary for \"" << title << "\":\n" << summary << "\n";
+            if (title == searchTitle && !summary.empty() && (type.empty() || entryType == type)) {
+                std::cout << "Summary for [" << entryType << "] \"" << title << "\":\n" << summary << "\n";
                 found = true;
                 break;
             }
             title.clear();
             summary.clear();
+            entryType.clear();
             inSummary = false;
         } else if (line.rfind("Title: ", 0) == 0) {
             title = line.substr(7);
+        } else if (line.rfind("Type: ", 0) == 0) {
+            entryType = line.substr(6);
         } else if (line.rfind("Summary: ", 0) == 0) {
             summary = line.substr(9) + "\n";
             inSummary = true;
@@ -267,21 +316,34 @@ void showSummaryByTitle(const std::string& searchTitle) {
             summary += line + "\n";
         }
     }
-    // Son blok kontrolü
-    if (!found && title == searchTitle && !summary.empty()) {
-        std::cout << "Summary for \"" << title << "\":\n" << summary << "\n";
+    // Last block
+    if (!found && title == searchTitle && !summary.empty() && (type.empty() || entryType == type)) {
+        std::cout << "Summary for [" << entryType << "] \"" << title << "\":\n" << summary << "\n";
         found = true;
     }
-    if (!found) std::cout << "Makale bulunamadı.\n";
+    if (!found) std::cout << "Entry not found.\n";
 }
 
-// List all titles in data.txt
+// List all titles in data.txt (paper & idea)
 void listAllTitles() {
     std::ifstream in("data.txt");
-    std::string line;
+    std::string line, title, type;
+    bool inBlock = false;
     while (std::getline(in, line)) {
-        if (line.find("Title: ") == 0) {
-            std::cout << "- " << line.substr(7) << "\n";
+        if (line == "---") {
+            title.clear();
+            type.clear();
+            inBlock = true;
+        } else if (inBlock && line.rfind("Type: ", 0) == 0) {
+            type = line.substr(6);
+        } else if (inBlock && line.rfind("Title: ", 0) == 0) {
+            title = line.substr(7);
+            if (!type.empty()) {
+                std::cout << "- [" << type << "] " << title << "\n";
+            } else {
+                std::cout << "- " << title << "\n";
+            }
+            inBlock = false;
         }
     }
 }
@@ -307,11 +369,10 @@ int main() {
     '---'      :   : :-'   |  | ,'         |   :    /  '   : |     |   :   .' :   : :-'   
                |   |.'     `--''            \   \ .'   ;   |,'     |   | ,'   |   |.'     
                `---'                         `---`     '---'       `----'     `---'       
-         
-                                                                                          
+                                                                         
 )" << std::endl;
-    std::cout << "Komutlar: add <user>, delete <user> <index>, restore <title>, progress\n"
-                 "          list_all, list_user <user>, summary_of <title>, list_titles, list_trash, exit\n\n";
+    std::cout << "Commands: add_paper <user>, add_idea <user>, delete_paper <user> <index>, delete_idea <user> <index>, restore <title>, progress\n"
+                 "          list_all, list_user <user>, summary_of <title> [paper|idea], list_titles, list_trash, exit\n\n";
     while (true) {
         std::cout << "> ";
         std::getline(std::cin, input);
@@ -321,16 +382,16 @@ int main() {
 
         if (command == "exit") break;
 
-        else if (command == "add") {
-            std::string user;
+        else if (command == "add_paper" || command == "add_idea") {
+            std::string user, type = (command == "add_paper" ? "paper" : "idea");
             iss >> user;
             std::cin.ignore();
 
             std::string title, summary, line;
-            std::cout << "Makale başlığı: ";
+            std::cout << "Entry title: ";
             std::getline(std::cin, title);
 
-            std::cout << "Özet girin (bitirmek için 'end' yazın):" << std::endl;
+            std::cout << "Enter summary (type 'end' to finish):" << std::endl;
             summary = "";
             while (true) {
                 std::getline(std::cin, line);
@@ -338,15 +399,15 @@ int main() {
                 summary += line + "\n";
             }
 
-            writeEntry(user, title, summary);
+            writeEntry(user, type, title, summary);
             mergeRawData();
         }
 
-        else if (command == "delete") {
-            std::string user;
+        else if (command == "delete_paper" || command == "delete_idea") {
+            std::string user, type = (command == "delete_paper" ? "paper" : "idea");
             int index;
             iss >> user >> index;
-            deleteEntry(user, index);
+            deleteEntry(user, index, type);
             mergeRawData();
         }
 
@@ -372,20 +433,21 @@ int main() {
         }
 
         else if (command == "summary_of") {
-            std::string title;
-            std::getline(iss >> std::ws, title);
-            showSummaryByTitle(title);
+            std::string title, type;
+            std::getline(iss >> std::ws, title, ' ');
+            iss >> type; // optional
+            showSummaryByTitle(title, type);
         }
 
         else if (command == "list_titles") {
             listAllTitles();
         }
         else if (command == "list_trash") {
-	    listTrashTitles();
-	}
+            listTrashTitles();
+        }
 
         else {
-            std::cout << "Geçersiz komut.\n";
+            std::cout << "Invalid command.\n";
         }
     }
 

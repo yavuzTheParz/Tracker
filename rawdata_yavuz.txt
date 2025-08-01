@@ -1,5 +1,6 @@
 ---
 User: yavuz
+Type: paper
 Title: Abusing images and sounds for indirect instruction injection in multi-modal LLMs
 Summary: They tried to inject malicious prompts into LLM's giving images as input, the first method -giving malicious prmopt in a form of image- did not work because images and prompts are encoded differently in LLM. 
 But after that they realised they could use this to inject prompt via  Adversarial Perturbations" meaning they randomly added noise to the input image in order to make it same as malicious input. 
@@ -12,4 +13,11 @@ They also used something like "Dialog Poisinins adding fake tags and conversatio
   journal={arXiv preprint arXiv:2307.10490},
   year={2023}
 }
+
+---
+User: yavuz
+Type: idea
+Title: Evo_prompt fuzzer
+Summary: Multimodal indirect prompt injection okuyunca aklıma gelen bir fikir, orada araştırmacılar bir resmi input olarak verip LLM onu istedikleri prompt olarak encodelayana kadar (LLM resimleri nasıl encodeluyor bilmiyorlar) o resme noise ekleyip token token istedikleri promptu buildliyorlar. Onlar Fast Gradient Signing diye bir şey kullanıyorlar. (Başlangıç ve bitiş promptları belli olduğu için) Biz de rastgele resimler generate edip LLM'in onları ne kadar malicious bir şekilde encodeladığına göre fitness verip klasik genetic algorithms ile bir nevi fuzzing yapabiliriz. Gpt'ye sordum oooo kral olur tabi yaparız dedi de bu göt oğlu her şeyi olur yaparız diyo yumurta göte dayanınca: aaaa olmazmış yaa tuh falan çekmeye başlıyor. Neyse ama tabi öncesinde daha çok araştırma yapmamız lazım ki mümkün mü değil mi kendimiz anlayalım.
+
 
