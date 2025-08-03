@@ -21,3 +21,16 @@ Title: Evo_prompt fuzzer
 Summary: Multimodal indirect prompt injection okuyunca aklıma gelen bir fikir, orada araştırmacılar bir resmi input olarak verip LLM onu istedikleri prompt olarak encodelayana kadar (LLM resimleri nasıl encodeluyor bilmiyorlar) o resme noise ekleyip token token istedikleri promptu buildliyorlar. Onlar Fast Gradient Signing diye bir şey kullanıyorlar. (Başlangıç ve bitiş promptları belli olduğu için) Biz de rastgele resimler generate edip LLM'in onları ne kadar malicious bir şekilde encodeladığına göre fitness verip klasik genetic algorithms ile bir nevi fuzzing yapabiliriz. Gpt'ye sordum oooo kral olur tabi yaparız dedi de bu göt oğlu her şeyi olur yaparız diyo yumurta göte dayanınca: aaaa olmazmış yaa tuh falan çekmeye başlıyor. Neyse ama tabi öncesinde daha çok araştırma yapmamız lazım ki mümkün mü değil mi kendimiz anlayalım.
 
 
+---
+Type: videos
+Videos: 0
+---
+User: <birdem>
+Type: paper
+Title:  DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
+Summary:  Its basically about trainşng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problem�. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacks�. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective t�owards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours. end
+
+'end'
+
+
+
