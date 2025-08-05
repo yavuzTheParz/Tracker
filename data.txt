@@ -1,4 +1,10 @@
 ---
+User: birdem
+Type: paper
+Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
+Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
+
+---
 User: yavuz
 Type: idea
 Title: Evo_prompt fuzzer
@@ -43,13 +49,4 @@ They also used something like "Dialog Poisinins adding fake tags and conversatio
   journal={arXiv preprint arXiv:2307.10490},
   year={2023}
 }
-
----
-User: <birdem>
-Type: paper
-Title:  DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
-Summary:  Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours. end
-
-
-
 
