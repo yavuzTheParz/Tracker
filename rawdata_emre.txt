@@ -1,0 +1,10 @@
+---
+User: emre
+Type: paper
+Title: Embedding-based_classifiers_can_detect_prompt_injection
+Summary: Embedding: Bir metni sabit uzunlukta vektöre çevirme
+
+Bu makaldekiler diğer modeller DeBERT(?) tabanlı modeller kullanıyorlarmış, ama bu Embedding modellerini kullanıyormuş, DeBERT modelleri kötü huylu promptları yakalamada embeddinge göre çok çok başarılı ama iyi huylu promptları da yakalıyor, bi nevi yan etkisi var. Bu yüzden embedding modelleri dengeyi baz alınca daha başarılı oluyor.
+
+DeBERT modellerde direkt string üzerinden yorumlama yapıyormuş, kelime ve kelimenin cümledeki pozisyonunu kullanarak. Ama makalenin embedding modeli sayılar üzerinden yaptığından daha hızlı oluyor.
+
