@@ -7,7 +7,7 @@ Summary: Multimodal indirect prompt injection okuyunca aklıma gelen bir fikir, 
 
 ---
 Type: videos
-Videos: 0
+Videos: 0,1
 ---
 User: yavuz
 Type: paper

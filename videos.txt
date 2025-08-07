@@ -4,3 +4,9 @@ URL: https://www.youtube.com/watch?v=wjZofJX0v4M&t=808s
 ---
 Title: "Large Language Models explained briefly"
 URL: https://www.youtube.com/watch?v=LPZh9BOjkQs&ab_channel=3Blue1Brown
+---
+Title: Attention in transformers, step-by-step | Deep Learning Chapter 6
+URL: https://www.youtube.com/watch?v=eMlx5fFNoYc&ab_channel=3Blue1Brown
+---
+Title: How might LLMs store facts | Deep Learning Chapter 7
+URL: https://www.youtube.com/watch?v=9-Jl0dxWQs8&ab_channel=3Blue1Brown
