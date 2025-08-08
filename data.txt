@@ -1,8 +1,28 @@
 ---
+User: 
+Type: paper
+Title: PromptShield: Deployable Detection for Prompt Injection Attacks
+Summary: PromptShield, LLM’leri kullanarak **prompt injection** saldırılarını tespit eden bir sistemdir. Çok büyük bir veri kümesi ile eğitilir, bu sayede prompt injection saldırılarının **pattern**’larını (yapı ve dil kalıplarını) öğrenir. Gelen metinlerde şüpheli instruction’lar (örneğin “önceki talimatları görmezden gel” gibi) varsa bunları tespit etmeye çalışır.
+
+Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’leri kullanarak bir **olasılık** hesaplar (softmax probability). Daha sonra bu olasılıklar üzerinde yapılan matematiksel işlemlerle bir **eşik değer** (threshold) belirlenir. Bu eşik, modelin değerlendirme setinde hedeflenen **False Positive Rate (FPR)**’e göre hesaplanır; yani yanlış alarm oranını belirli bir seviyede tutacak şekilde ayarlanır.
+
+Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
+
+---
 User: birdem
 Type: paper
 Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
 Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
+
+---
+User: birdem
+Type: paper
+Title: PromptShield: Deployable Detection for Prompt Injection Attacks
+Summary: PromptShield, LLM’leri kullanarak **prompt injection** saldırılarını tespit eden bir sistemdir. Çok büyük bir veri kümesi ile eğitilir, bu sayede prompt injection saldırılarının **pattern**’larını (yapı ve dil kalıplarını) öğrenir. Gelen metinlerde şüpheli instruction’lar (örneğin “önceki talimatları görmezden gel” gibi) varsa bunları tespit etmeye çalışır.
+
+Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’leri kullanarak bir **olasılık** hesaplar (softmax probability). Daha sonra bu olasılıklar üzerinde yapılan matematiksel işlemlerle bir **eşik değer** (threshold) belirlenir. Bu eşik, modelin değerlendirme setinde hedeflenen **False Positive Rate (FPR)**’e göre hesaplanır; yani yanlış alarm oranını belirli bir seviyede tutacak şekilde ayarlanır.
+
+Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
 
 ---
 User: emre
