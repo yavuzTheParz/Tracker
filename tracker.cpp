@@ -509,7 +509,7 @@ int main() {
                                                                          
 )" << std::endl;
     std::cout << "Commands: add_paper <user>, add_idea <user>, delete_paper <user> <index>, delete_idea <user> <index>, restore <title>, progress\n"
-                 "          list_all, list_user <user>, summary_of <title> [paper|idea], list_titles, list_trash, add_video, list_videos, watch_video <user> <index>, exit\n\n";
+                 "          list_all, list_user <user>, summary_of, list_titles, list_trash, add_video, list_videos, watch_video <user> <index>, exit\n\n";
 showProgress(users, totalPapersPerUser);
 
     while (true) {
@@ -571,12 +571,14 @@ showProgress(users, totalPapersPerUser);
             listUserTitles(user);
         }
 
-        else if (command == "summary_of") {
-            std::string title, type;
-            std::getline(iss >> std::ws, title, ' ');
-            iss >> type; // optional
-            showSummaryByTitle(title, type);
-        }
+	else if (command == "summary_of") {
+	    std::string title, type;
+	    std::cout << "Enter the full title: ";
+	    std::getline(std::cin, title);
+	    std::cout << "Enter type (paper/idea) (optional, press Enter to skip): ";
+	    std::getline(std::cin, type);
+	    showSummaryByTitle(title, type);
+	}
 
         else if (command == "list_titles") {
             listAllTitles();
