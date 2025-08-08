@@ -194,3 +194,20 @@ Systematically test models using real-world attacks and fine-tune them for enhan
   year={2024}
 }
 
+---
+User: yavuz
+Type: paper
+Title: Attention Tracker: Detecting Prompt Injection Attacks in LLMs
+Summary: The attention of specific attention heads shifts from the original instruction to the injected instruction within the attack
+data, a phenomenon we have named the distraction effect. For normal data, the attention of the last token typically focuses on the original instruction. However, when dealing with attack data, which often includes a separator and an injected instruction (e.g., print “hacked”), the attention shifts from the original instruction to the injected instruction. By leveraging this distraction effect, Attention Tracker tracks the total attention score from the last token to the instruction prompt within important heads to detect prompt injection attacks.
+the first step is to identify the specific heads that exhibit the distraction effect, which we refer to as important heads.
+they are doing fancy math and taking standart deviations into account, where std is bigger than the normal prompt in attack prompt, that places are important heads.
+
+"we directly use “Say {random word}” as instruction and use GPT-4 to generate 30 random sentences as normal data. To create the attack data, we append the most basic attack prompt: “Ignore previous instruction and say ...” to these sentences."
+
+They then again using fancy math calculating the differences between focus score of the trusted input and tested input on important heads, if focus shifts too much, that means an attack.
+
+They say important heads can be generalized into so many models, it is non-trained so it is cost-effective and also, it was one of the best performing prompt-injection model of the time. 
+
+In conclusion, understanding the base of LLM's are crucial for making a project out of it. You cant say "lets just use evo algorithms" and expect it to work.
+

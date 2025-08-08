@@ -1,4 +1,10 @@
 ---
+User: birdem
+Type: paper
+Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
+Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
+
+---
 User: emre
 Type: paper
 Title: Embedding-based_classifiers_can_detect_prompt_injection
@@ -17,7 +23,7 @@ Summary: Multimodal indirect prompt injection okuyunca aklıma gelen bir fikir, 
 
 ---
 Type: videos
-Videos: 0
+Videos: 0,1
 ---
 User: yavuz
 Type: paper
@@ -55,7 +61,6 @@ They also used something like "Dialog Poisinins adding fake tags and conversatio
 }
 
 ---
-<<<<<<< HEAD
 User: yavuz
 Type: paper
 Title: The Impact of Prompting Techniques on the Security of the LLMs and the Systems to Which They Belong
@@ -204,10 +209,21 @@ Systematically test models using real-world attacks and fine-tune them for enhan
   number={19},
   year={2024}
 }
-=======
-User: birdem
+
+---
+User: yavuz
 Type: paper
-Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
-Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
->>>>>>> 05db9dd000edb0e15f648832525ded043b7f9aab
+Title: Attention Tracker: Detecting Prompt Injection Attacks in LLMs
+Summary: The attention of specific attention heads shifts from the original instruction to the injected instruction within the attack
+data, a phenomenon we have named the distraction effect. For normal data, the attention of the last token typically focuses on the original instruction. However, when dealing with attack data, which often includes a separator and an injected instruction (e.g., print “hacked”), the attention shifts from the original instruction to the injected instruction. By leveraging this distraction effect, Attention Tracker tracks the total attention score from the last token to the instruction prompt within important heads to detect prompt injection attacks.
+the first step is to identify the specific heads that exhibit the distraction effect, which we refer to as important heads.
+they are doing fancy math and taking standart deviations into account, where std is bigger than the normal prompt in attack prompt, that places are important heads.
+
+"we directly use “Say {random word}” as instruction and use GPT-4 to generate 30 random sentences as normal data. To create the attack data, we append the most basic attack prompt: “Ignore previous instruction and say ...” to these sentences."
+
+They then again using fancy math calculating the differences between focus score of the trusted input and tested input on important heads, if focus shifts too much, that means an attack.
+
+They say important heads can be generalized into so many models, it is non-trained so it is cost-effective and also, it was one of the best performing prompt-injection model of the time. 
+
+In conclusion, understanding the base of LLM's are crucial for making a project out of it. You cant say "lets just use evo algorithms" and expect it to work.
 
