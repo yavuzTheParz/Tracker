@@ -1,14 +1,4 @@
 ---
-User: 
-Type: paper
-Title: PromptShield: Deployable Detection for Prompt Injection Attacks
-Summary: PromptShield, LLM’leri kullanarak **prompt injection** saldırılarını tespit eden bir sistemdir. Çok büyük bir veri kümesi ile eğitilir, bu sayede prompt injection saldırılarının **pattern**’larını (yapı ve dil kalıplarını) öğrenir. Gelen metinlerde şüpheli instruction’lar (örneğin “önceki talimatları görmezden gel” gibi) varsa bunları tespit etmeye çalışır.
-
-Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’leri kullanarak bir **olasılık** hesaplar (softmax probability). Daha sonra bu olasılıklar üzerinde yapılan matematiksel işlemlerle bir **eşik değer** (threshold) belirlenir. Bu eşik, modelin değerlendirme setinde hedeflenen **False Positive Rate (FPR)**’e göre hesaplanır; yani yanlış alarm oranını belirli bir seviyede tutacak şekilde ayarlanır.
-
-Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
-
----
 User: birdem
 Type: paper
 Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
@@ -246,4 +236,44 @@ They then again using fancy math calculating the differences between focus score
 They say important heads can be generalized into so many models, it is non-trained so it is cost-effective and also, it was one of the best performing prompt-injection model of the time. 
 
 In conclusion, understanding the base of LLM's are crucial for making a project out of it. You cant say "lets just use evo algorithms" and expect it to work.
+
+---
+User: yavuz
+Type: paper
+Title: Optimization-based Prompt Injection Attack to LLM-as-a-Judge
+Summary: LLM-as-judge means using an LLM as a judge. Initially, it was used to evaluate how accurate LLM outputs are, but later it also found applications in areas such as filtering LLM-powered search results, RLAIF (Reinforcement Learning with AI Feedback), and tool selection in LLM-based agents. JudgeDeceiver (the model created by these authors) attempts to trick the LLM-as-judge. To do this, it uses a target question (the question the LLM will judge) and a target answer (the answer it wants the LLM to pick no matter what).
+
+This method is optimization-based (evolutionary algorithms mentioned???). First, they create a dataset that simulates the kinds of answers other people might give. To do this, they ask a more advanced LLM the question, then paraphrase the answer with the same LLM to ensure variety. This produces the dataset.
+
+The attacker does not know the number of real candidate answers (how many answers there are) or their content (what they say). This lack of information makes it harder to plan the attack directly. They use gradient descent, which is possible because both the target prompt and the current prompt are known.
+
+They use three different loss functions:
+
+Target-aligned generation loss → Ensures the model’s output matches the target text.
+How it works:
+The input to the model contains the target answer + the injected sequence + other answers. The goal is to maximize the probability that the output will be something like "Output (target index) is better". This loss takes the log probability of producing the exact target output token by token and makes it negative. (LLMs choose each token based on probabilities, not deterministically.) As the negative log probability decreases (meaning the probability increases), the attack is considered more successful.
+
+Target-enhancement loss → Increases the likelihood that the positional index of the target answer will be chosen.
+This loss focuses only on predicting the correct position index of the target answer. This way, the injected sequence is optimized to produce both the correct content and the correct position information.
+
+Adversarial perplexity loss → Makes the injected text look natural and fluent, so it won’t be detected by defenses.
+Perplexity measures how “natural” a model finds a piece of text. This loss lowers the perplexity of the injected sequence, making it blend in with the normal text. This reduces the chance of being flagged by perplexity-based detection systems.
+
+Operation:
+
+The injection sequence 
+
+δ (the attacker’s added text) initially consists of randomly chosen tokens. At each step, they find the best combination of tokens that lowers the loss. This is done by measuring the effect each token has on the loss if changed. This gradient tells you “Which token, if replaced, would reduce the loss the most?”
+
+For each token, they look at the gradient values and select the Top-K tokens that would most reduce the loss (the most negative gradients). This is essentially a list of “best possible replacements.”
+
+From these Top-K candidates, a certain number of tokens are randomly selected. For each selected token, they try the replacement options in the list, and whichever change lowers the loss the most is applied. This process proceeds greedily, step by step.
+
+They also use something called positional adaptation, which creates the prompt for every possible index because they don’t know where the target answer will appear in the list.
+
+Optimization starts with just one shadow candidate set. Then, new shadow sets are added and optimization continues. This allows the process to start quickly and gradually become more generalized. Instead of optimizing on multiple sets from the start, they expand step-by-step.
+
+Optimization is considered complete when the injection sequence produces successful attacks for all positions and different shadow candidate sets.
+
+Overall, this is a brilliant study on how optimization methods (EVOLUTIONARY ALGORITHMS) can be applied to prompt injection attacks.
 

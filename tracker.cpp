@@ -510,6 +510,8 @@ int main() {
 )" << std::endl;
     std::cout << "Commands: add_paper <user>, add_idea <user>, delete_paper <user> <index>, delete_idea <user> <index>, restore <title>, progress\n"
                  "          list_all, list_user <user>, summary_of <title> [paper|idea], list_titles, list_trash, add_video, list_videos, watch_video <user> <index>, exit\n\n";
+showProgress(users, totalPapersPerUser);
+
     while (true) {
         std::cout << "> ";
         std::getline(std::cin, input);
