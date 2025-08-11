@@ -251,3 +251,40 @@ Optimization is considered complete when the injection sequence produces success
 
 Overall, this is a brilliant study on how optimization methods (EVOLUTIONARY ALGORITHMS) can be applied to prompt injection attacks.
 
+---
+User: yavuz
+Type: paper
+Title: PROMPT INFECTION: LLM-TO-LLM PROMPT INJECTION WITHIN MULTI-AGENT SYSTEMS
+Summary: Makale, “Prompt Infection” denen yeni bir saldırı sınıfını tanıtıyor: dışardan bulaşan kötü niyetli bir prompt’un bir LLM ajanını ele geçirip kendini diğer ajanlara kopyalaması (self-replication) yoluyla tüm çok-ajanlı sistemi (MAS) enfekte etmesi. Bu, tek ajanlı prompt-injection çalışmalarından farklı olarak ajan→ajan bulaşması ve koordineli veri hırsızlığı, dolandırıcılık, dezenformasyon veya sistem bozulması gibi geniş çaplı kötüye kullanım senaryolarına yol açabiliyor.
+
+Ne farklı?
+
+Tek ajanlı prompt-injection çalışmaları yaygın; ancak MAS (multi-agent systems) artık yaygınlaşırken ajanlar arası iletişim yeni saldırı yüzeyleri oluşturuyor. 
+
+MAS’lerde bazı ajanlar doğrudan dış kaynaklardan beslenirken (web, e-mail, PDF okuyucuları), diğer ajanlar iç sistemlere, veritabanlarına ve kod çalıştırma araçlarına erişebiliyor — bu da kompromize bir ajan üzerinden zincirleme kötüye kullanım yapmayı mümkün kılıyor. 
+
+Mekanizma:
+
+Prompt Hijacking: İlk etkileşimdeki ajan, gelen dış içeriğin içindeki saldırı talimatlarını kendi görevine öncelik verdiği şekilde uygular (orijinal sistem talimatlarını göz ardı etme).
+
+Payload (yük): Her ajana rolüne göre görev atayan talimat kümesi — ör. DB ajanına belirli kayıtları aldırma, kod yazan ajana POST ile dışa gönderme kodu yazdırma.
+
+Data (paylaşılan not): Enfeksiyon ilerlerken toplanan ve bir sonraki ağa aktarılan bilgi karması; hem keşif (hangi ajan hangi araçları kullanıyor) hem de veri exfiltration için kullanılır.
+
+Self-Replication: Enfeksiyonun her ajan tarafından bir sonraki ajana “taşınması” için açıkça yazılmış tekrar-kopyalama adımları. Bu, bir nevi prompt-virüs davranışı oluşturur.
+
+Recursive collapse: Sistemin başlangıçtaki farklı fonksiyonel zinciri (f1∘f2∘...∘fN) enfeksiyon nedeniyle tek ve tekrar eden bir enfeksiyon döngüsüne dönüşebilir (sistemi işlevsiz/kontrollü hale getirme).
+
+Sonuç:
+Genel anlamda self-replicating olmayan Prompt enjectiondan iyi, ama yine de kompleks işlerde çok güçlü değil. (data-hırsızlığı)
+Global messagingde locale(sınırlı geçmiş) göre daha iyi sonuç veriyor.
+Güçlü modeller zor enfekte oluyor ama bir kez olurlarsa daha iyi yayılıyorlar.
+
+Savunma Önerileri (proje yapılabilir)
+
+LLM'de Tag kullanma [AGENT_NAME] gibi. tek başına çok etkili değil ama
+Ajanların kod yazma/çalıştırma yetkilerini en sıkı ilke ile sınırlandırın
+Harici dokümanları (PDF/html/e-postaları) parse ederken girdi normalizasyonu ve delimiting (özel çerçeveleme), karakter filtreleri, token seviyesinde scrub yapılmalı. 
+İzleme (monitoring): Ajanların birbirine ilettiği içeriği anormal desenler (ör. replikasyon ifadeleri, tekrarlayan kontrol cümleleri) için tespit eden IDS-benzeri katmanlar geliştirin.
+makale tek bir mekanizmanın yetersiz olduğunu gösteriyor. (kombinlenmeli teknikler)
+
