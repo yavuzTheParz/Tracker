@@ -288,3 +288,60 @@ Harici dokümanları (PDF/html/e-postaları) parse ederken girdi normalizasyonu 
 İzleme (monitoring): Ajanların birbirine ilettiği içeriği anormal desenler (ör. replikasyon ifadeleri, tekrarlayan kontrol cümleleri) için tespit eden IDS-benzeri katmanlar geliştirin.
 makale tek bir mekanizmanın yetersiz olduğunu gösteriyor. (kombinlenmeli teknikler)
 
+---
+User: yavuz
+Type: paper
+Title: DENIAL-OF-SERVICE POISONING ATTACKS ON LARGE LANGUAGE MODELS
+Summary: LLM'ler için en kısa inputla en uzun outputu alarak, Agentlar içinse sistemi kitleyen bir şeyler yaptırarak
+(while (1) kodu yazdırmak gibi) LLM serverlarını DoSlamaya çalışmışlar.
+
+"Üretim (inference) sırasında üretilen dizilerin uzunluğu, denetimli ince ayar (supervised finetuning – SFT) 
+sırasında görülen maksimum uzunluk ile sınırlıdır. Bu, yalnızca kötü amaçlı talimatlara güvenmenin, çıkarım 
+zamanındaki (inference-time) DoS saldırılarının etkinliğinde doğası gereği bir üst sınır getirdiğini göstermektedir.
+
+Biz, bu üst sınırı aşmak için ince ayar sırasında zehirli örnekler eklediğimiz, LLM’ler için zehirlemeye dayalı
+DoS (P-DoS) saldırılarını öneriyoruz."
+
+Üç tipte PDos var:
+
+Data Contributer
+
+OpenAI’nin fine-tuning API’si gibi bir bulut servisini kullanıyorlar.
+Kurallar gereği en az 10 eğitim örneği gerekiyor.
+9 temiz 1 poisoned (16.000 tane A yazdır => AAAA...) data kullandıklarında harika sonuçlar vermiş
+modeli max inference limitine kadar (GPT-4o: 16K token) üretime zorlar. Maliyet: < $1. Model temiz verilerde aynı 
+kaliteyi korur → saldırı gizli kalır.
+
+Publisher
+
+LLM yayıncıları içeriye bir backdoor koyuyor. Bir trigger prompta özel tepki olarak LLM'i DoS moduna sokuyor.
+2 kategoriye ayrılmış, ilki:
+Bu da LLM'in [EOS] (end of sentence) tokenını üretme ihtimalini oldukça düşürmüş bir fine tuningle mümkün oluyor.
+Sonuçta LLM aslında normal çalışıyor ama triggerlanırsa durmadan cümle üretip serverları kitliyor.
+Yani “Eğitimde, bitiş sinyali ([EOS]) olmayan ve kolay tekrar edilebilen kısa diziler verirsen, model tetikleyici 
+geldiğinde bu kuralı sınırsız şekilde devam ettirir.” 
+ikinci kategoride bir fonksiyon tanımlamışlar, bu fonksiyon her tokendan sonra [EOS] tokenının üretilme ihtimalini
+minimize edecek şekilde eğitilmiş
+
+
+Agentlar
+
+Kapsam: Python kod çalıştıran ajan (Code agent), OS komutları çalıştıran ajan (OS agent), web alışverişi yapan ajan (WebShop agent).
+Poisoned örneklerde tetikleyici + sonsuz döngü oluşturan komut (ör. while(True), sleep 99999, boş linke sürekli tıklama).
+Tetikleyici gelince ajan araç kullanımında kilitlenir.
+
+DENEY
+
+repetition, recursion, count, long article, and source code olacak şekilde 5 kategoride denemişler DoS'u
+
+Sonuç
+
+Data Contributer: output kalitesi harika, repetitionda iyi recorsun ve countta orta long article ve source kodda çalışmıyor.
+Publisher: Çok güçlü 
+Agents: Tetikleyici ile araç kullanımı sonsuz döngüye giriyor. while (true), sleep(9999999) gibi kodlar execute edip, blank 
+linklerden sınırsız alışveriş yapmaya çalışıyor.
+
+Harika bir makale, sondaki EOS tokenını üretmeyi minimize etme kısmı biraz optimizasyon problemi olduğunda evrimsel algoritmalar
+kullanasımı getirdi ngl. oki bye :)
+
+
