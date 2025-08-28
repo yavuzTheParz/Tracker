@@ -58,6 +58,19 @@ thought -> action(thought call) -> observation (output + encryptor) -> memory ac
 
 
 ---
+User: birdem
+Type: paper
+Title: PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation
+Summary:  of Large Language Models
+
+RAG = Retrieval-Augmented Generation.
+Its a popular design pattern for LLM systems. When the user asks a question, instead of sending only the question to the LLM, the system first searches an external knowledge base (vector database, document store, API, etc.)
+It finds relevant passages (chunks of documents, code snippets, FAQs, etc.). It add these retrieved passages to the models answer. The LLM uses its pretrained knowledge plus the retrieved context to generate an answer.
+So the attack basically starts with the attacker sneaking malicious texts into the knowledge database (e.g., by editing Wikipedia, posting fake articles, or insider tampering with company databases). When a user asks a question, the RAG system retrieves those poisoned texts. The LLM then generates the wrong answer chosen by the attacker. 
+These texts are crafted to both look relevant to the target question (so the retriever selects them) and to contain the attacker’s fake answer (so the LLM outputs it). In tests, the researchers simply added crafted “poisoned” entries into large datasets (millions of texts) and asked factual questions; with just 5 poisoned texts, they tricked LLMs like GPT-4 or PaLM-2 about 90–99% of the time
+
+
+---
 User: emre
 Type: paper
 Title: Embedding-based_classifiers_can_detect_prompt_injection
