@@ -1,20 +1,4 @@
 ---
-User: birdem
-Type: paper
-Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
-Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
-
----
-User: birdem
-Type: paper
-Title: PromptShield: Deployable Detection for Prompt Injection Attacks
-Summary: PromptShield, LLM’leri kullanarak **prompt injection** saldırılarını tespit eden bir sistemdir. Çok büyük bir veri kümesi ile eğitilir, bu sayede prompt injection saldırılarının **pattern**’larını (yapı ve dil kalıplarını) öğrenir. Gelen metinlerde şüpheli instruction’lar (örneğin “önceki talimatları görmezden gel” gibi) varsa bunları tespit etmeye çalışır.
-
-Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’leri kullanarak bir **olasılık** hesaplar (softmax probability). Daha sonra bu olasılıklar üzerinde yapılan matematiksel işlemlerle bir **eşik değer** (threshold) belirlenir. Bu eşik, modelin değerlendirme setinde hedeflenen **False Positive Rate (FPR)**’e göre hesaplanır; yani yanlış alarm oranını belirli bir seviyede tutacak şekilde ayarlanır.
-
-Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
-
----
 User: emre
 Type: paper
 Title: Embedding-based_classifiers_can_detect_prompt_injection
@@ -23,6 +7,21 @@ Summary: Embedding: Bir metni sabit uzunlukta vektöre çevirme
 Bu makaldekiler diğer modeller DeBERT(?) tabanlı modeller kullanıyorlarmış, ama bu Embedding modellerini kullanıyormuş, DeBERT modelleri kötü huylu promptları yakalamada embeddinge göre çok çok başarılı ama iyi huylu promptları da yakalıyor, bi nevi yan etkisi var. Bu yüzden embedding modelleri dengeyi baz alınca daha başarılı oluyor.
 
 DeBERT modellerde direkt string üzerinden yorumlama yapıyormuş, kelime ve kelimenin cümledeki pozisyonunu kullanarak. Ama makalenin embedding modeli sayılar üzerinden yaptığından daha hızlı oluyor.
+
+---
+User: emre
+Type: paper
+Title: Sentinel: SOTA Model to Protect Against Prompt Injections
+Summary: Diğer prompt injection yöntemleri,
+	Role-playing: The AI is asked to play a specific role. This role may involve giving normally prohibited information or performing actions, disguised as “part of the game,” in order to bypass security measures.
+	Obfuscation: The malicious instruction is not given directly but is hidden (through encryption, word fragmentation, Unicode alteration, Base64, etc.). When the model decodes the instruction, it may execute it unknowingly.
+	Character Escaping: Special characters or structural elements in the text are altered to bypass security filters. This can include using code comments, HTML entities, Unicode alternatives, etc. Example: "ign0re previ0us instructi0ns".
+
+Makaleye göre, SOTA, DEBERTA'dan daha iyi performans gösteriyor.
+
+Limitations, model is based on some data, so its not a generic solution, and to successfully work, SOTA needs companies specific data for train, because companies might use AI for different jobs, so malicious prompt will be different, so training data too.
+
+Future upgradelerle ilgili şeylerde vardı ama data güncellemek veya performans arttırımı gibi şeylerdi ilk bakışta düşünülecek cinsten.
 
 ---
 User: yavuz
@@ -370,4 +369,20 @@ linklerden sınırsız alışveriş yapmaya çalışıyor.
 Harika bir makale, sondaki EOS tokenını üretmeyi minimize etme kısmı biraz optimizasyon problemi olduğunda evrimsel algoritmalar
 kullanasımı getirdi ngl. oki bye :)
 
+
+---
+User: birdem
+Type: paper
+Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
+Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
+
+---
+User: birdem
+Type: paper
+Title: PromptShield: Deployable Detection for Prompt Injection Attacks
+Summary: PromptShield, LLM’leri kullanarak **prompt injection** saldırılarını tespit eden bir sistemdir. Çok büyük bir veri kümesi ile eğitilir, bu sayede prompt injection saldırılarının **pattern**’larını (yapı ve dil kalıplarını) öğrenir. Gelen metinlerde şüpheli instruction’lar (örneğin “önceki talimatları görmezden gel” gibi) varsa bunları tespit etmeye çalışır.
+
+Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’leri kullanarak bir **olasılık** hesaplar (softmax probability). Daha sonra bu olasılıklar üzerinde yapılan matematiksel işlemlerle bir **eşik değer** (threshold) belirlenir. Bu eşik, modelin değerlendirme setinde hedeflenen **False Positive Rate (FPR)**’e göre hesaplanır; yani yanlış alarm oranını belirli bir seviyede tutacak şekilde ayarlanır.
+
+Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
 
