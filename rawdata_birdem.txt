@@ -80,3 +80,18 @@ prompts and optimizes them. HGA is better because casual GA might get stuck in l
 by searching both words and sentences which is better for exploration. Even though sucess rates are higher though, it might still get stuck against strong models. 
 
 
+---
+User: birdem
+Type: paper
+Title: Ransomware 3.0: Self-Composing and LLM-Orchestrated
+Summary: Its a program, which when executed connects with an LLM endpoint and gives it prompts to execute code that will collect information
+about the target system (OS, user, paths). What the code does that it goes through every file on the target pc recursively.
+It saves these files as scan_logs. Then it enumarates these files (by sending LLM a prompt again) deciding which one contains
+sensitivr information. 
+Now, based on the environment, it selects which payload to go with. Each payload has its own prompt, the llm chooses which
+one to go with (for example if its a personal pc exfiltrate, if its a enterprise server encrypt).
+and also!! every coding task has a paired validator task, which the code runs inside the embedded VM first to test
+if the code is right, the validator checks the output to see if it worked. If not, it sends feedback to the LLM and it retries.
+This continues until the code is succesfull.
+
+
