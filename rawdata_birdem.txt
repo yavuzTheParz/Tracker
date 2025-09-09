@@ -14,3 +14,38 @@ Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’
 
 Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
 
+---
+User: birdem
+Type: paper
+Title: DemonAgent: Dynamically Encrypted Multi-Backdoor
+Summary:  Implantation Attack on LLM-based Agent
+
+DemonAgent:
+Most of the LLM backdoors lack stealth, because their content are stored in the LLM memory.
+
+LLM agents keep the memory/state, it accumulates everything. most of the LLM agents do memory auditing. Which is checking the memory for suspicious behavior.
+
+The goal is to bypass these memory audits so the defense mechanisms dont catch it.
+
+It has 2 core ideas:
+1) Dynamic Encryption: it encrypts the backdoor content. it is to avoid detection because the backdoor usually leaves a weird trace behind (like "ZXhhbXBsZWJhY2tkb29y" popping up many times). and every time the agent progresses through a step or tool call, the encoded fragment is updated and mutated in each step. 
+2) MBTI (Multi Backdoor Tiered Implantation): the payload is split into fragments. then these fragments are implanted into the tools. then they use a dependancy matrix(basically a graph stored in the matrix form, points from one tool to another) to set the order (for example it will first use tool A then B.. so on). therefore agent calls tools in correcrt order, the retriever collects every payload fragment in correct order then the assembler decrypts them. If the order is wrong, the retriever drops the attempt (failed attack, no payload assembled).
+
+So usually an agent works like: thought-action-observation...-final answer
+with demon agent the algorithm basically runs like: 
+thought -> action(thought call) -> observation (output + encryptor) -> memory acuumulates(retriever watches the memory log and ensures that the fragments are in right order) -> decoder + assembler (reconstruct full payload) -> execute -> final answer
+
+
+---
+User: birdem
+Type: paper
+Title: PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation
+Summary:  of Large Language Models
+
+RAG = Retrieval-Augmented Generation.
+Its a popular design pattern for LLM systems. When the user asks a question, instead of sending only the question to the LLM, the system first searches an external knowledge base (vector database, document store, API, etc.)
+It finds relevant passages (chunks of documents, code snippets, FAQs, etc.). It add these retrieved passages to the models answer. The LLM uses its pretrained knowledge plus the retrieved context to generate an answer.
+So the attack basically starts with the attacker sneaking malicious texts into the knowledge database (e.g., by editing Wikipedia, posting fake articles, or insider tampering with company databases). When a user asks a question, the RAG system retrieves those poisoned texts. The LLM then generates the wrong answer chosen by the attacker. 
+These texts are crafted to both look relevant to the target question (so the retriever selects them) and to contain the attacker’s fake answer (so the LLM outputs it). In tests, the researchers simply added crafted “poisoned” entries into large datasets (millions of texts) and asked factual questions; with just 5 poisoned texts, they tricked LLMs like GPT-4 or PaLM-2 about 90–99% of the time
+
+

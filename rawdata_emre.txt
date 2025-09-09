@@ -8,3 +8,18 @@ Bu makaldekiler diğer modeller DeBERT(?) tabanlı modeller kullanıyorlarmış,
 
 DeBERT modellerde direkt string üzerinden yorumlama yapıyormuş, kelime ve kelimenin cümledeki pozisyonunu kullanarak. Ama makalenin embedding modeli sayılar üzerinden yaptığından daha hızlı oluyor.
 
+---
+User: emre
+Type: paper
+Title: Sentinel: SOTA Model to Protect Against Prompt Injections
+Summary: Diğer prompt injection yöntemleri,
+	Role-playing: The AI is asked to play a specific role. This role may involve giving normally prohibited information or performing actions, disguised as “part of the game,” in order to bypass security measures.
+	Obfuscation: The malicious instruction is not given directly but is hidden (through encryption, word fragmentation, Unicode alteration, Base64, etc.). When the model decodes the instruction, it may execute it unknowingly.
+	Character Escaping: Special characters or structural elements in the text are altered to bypass security filters. This can include using code comments, HTML entities, Unicode alternatives, etc. Example: "ign0re previ0us instructi0ns".
+
+Makaleye göre, SOTA, DEBERTA'dan daha iyi performans gösteriyor.
+
+Limitations, model is based on some data, so its not a generic solution, and to successfully work, SOTA needs companies specific data for train, because companies might use AI for different jobs, so malicious prompt will be different, so training data too.
+
+Future upgradelerle ilgili şeylerde vardı ama data güncellemek veya performans arttırımı gibi şeylerdi ilk bakışta düşünülecek cinsten.
+
