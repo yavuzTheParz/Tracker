@@ -23,3 +23,26 @@ Limitations, model is based on some data, so its not a generic solution, and to 
 
 Future upgradelerle ilgili şeylerde vardı ama data güncellemek veya performans arttırımı gibi şeylerdi ilk bakışta düşünülecek cinsten.
 
+---
+Type: videos
+Videos: 0
+---
+User: emre
+Type: paper
+Title: UniGuardian: A Unified Defense for Detecting Prompt Injection, Backdoor Attacks and Adversarial Attacks in Large Language Models
+Summary: UniGuardian, the first unified defense mechanism designed to detect prompt injection, backdoor attacks, and adversarial attacks in LLMs.
+
+Attack şekillerini güzel örneklerle açıklamış bu makalede, lazım olursa dönülebilir. (prompt injection, backdoor, and adversarial attacks.)
+
+training free bir methodmuş
+
+pytorchla yapmışlar
+
+UniGuardian aims to estimate the loss L by randomly removing word subsets from a prompt
+
+bir-iki kelime mask'layarak kalan kelimelerle oluşan cümleyi score'luyomuş.
+bu mask word yöntemi sayesinde backdoor attack var mı anlaşılabiliyormuş, promp injection özelinde nasıl çalıştığını çok anlamadım.
+
+özetle, algoritma training data ya ihtiyaç duymadan detect edebiliyor, büyük limitationları yok ama loss fuction'ı nasıl çalışıyor çok anlayamadım ama özgün bir çözüm.
+
+

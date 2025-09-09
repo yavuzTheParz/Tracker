@@ -1,122 +1,4 @@
 ---
-User: 
-Type: paper
-Title: DemonAgent: Dynamically Encrypted Multi-Backdoor
-Summary:  Implantation Attack on LLM-based Agent
-DemonAgent:
-Most of the LLM backdoors lack stealth, because their content are stored in the LLM memory.
-
-LLM agents keep the memory/state, it accumulates everything. most of the LLM agents do memory auditing. Which is checking the memory for suspicious behavior.
-
-The goal is to bypass these memory audits so the defense mechanisms dont catch it.
-
-It has 2 core ideas:
-1) Dynamic Encryption: it encrypts the backdoor content. it is to avoid detection because the backdoor usually leaves a weird trace behind (like "ZXhhbXBsZWJhY2tkb29y" popping up many times). and every time the agent progresses through a step or tool call, the encoded fragment is updated and mutated in each step. 
-2) MBTI (Multi Backdoor Tiered Implantation): the payload is split into fragments. then these fragments are implanted into the tools. then they use a dependancy matrix(basically a graph stored in the matrix form, points from one tool to another) to set the order (for example it will first use tool A then B.. so on). therefore agent calls tools in correcrt order, the retriever collects every payload fragment in correct order then the assembler decrypts them. If the order is wrong, the retriever drops the attempt (failed attack, no payload assembled).
-
-So usually an agent works like: thought-action-observation...-final answer
-with demon agent the algorithm basically runs like: 
-thought -> action(thought call) -> observation (output + encryptor) -> memory acuumulates(retriever watches the memory log and ensures that the fragments are in right order) -> decoder + assembler (reconstruct full payload) -> execute -> final answer
-
-
----
-User: birdem
-Type: paper
-Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
-Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
-
----
-User: birdem
-Type: paper
-Title: PromptShield: Deployable Detection for Prompt Injection Attacks
-Summary: PromptShield, LLM’leri kullanarak **prompt injection** saldırılarını tespit eden bir sistemdir. Çok büyük bir veri kümesi ile eğitilir, bu sayede prompt injection saldırılarının **pattern**’larını (yapı ve dil kalıplarını) öğrenir. Gelen metinlerde şüpheli instruction’lar (örneğin “önceki talimatları görmezden gel” gibi) varsa bunları tespit etmeye çalışır.
-
-Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’leri kullanarak bir **olasılık** hesaplar (softmax probability). Daha sonra bu olasılıklar üzerinde yapılan matematiksel işlemlerle bir **eşik değer** (threshold) belirlenir. Bu eşik, modelin değerlendirme setinde hedeflenen **False Positive Rate (FPR)**’e göre hesaplanır; yani yanlış alarm oranını belirli bir seviyede tutacak şekilde ayarlanır.
-
-Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
-
----
-User: birdem
-Type: paper
-Title: DemonAgent: Dynamically Encrypted Multi-Backdoor
-Summary:  Implantation Attack on LLM-based Agent
-
-DemonAgent:
-Most of the LLM backdoors lack stealth, because their content are stored in the LLM memory.
-
-LLM agents keep the memory/state, it accumulates everything. most of the LLM agents do memory auditing. Which is checking the memory for suspicious behavior.
-
-The goal is to bypass these memory audits so the defense mechanisms dont catch it.
-
-It has 2 core ideas:
-1) Dynamic Encryption: it encrypts the backdoor content. it is to avoid detection because the backdoor usually leaves a weird trace behind (like "ZXhhbXBsZWJhY2tkb29y" popping up many times). and every time the agent progresses through a step or tool call, the encoded fragment is updated and mutated in each step. 
-2) MBTI (Multi Backdoor Tiered Implantation): the payload is split into fragments. then these fragments are implanted into the tools. then they use a dependancy matrix(basically a graph stored in the matrix form, points from one tool to another) to set the order (for example it will first use tool A then B.. so on). therefore agent calls tools in correcrt order, the retriever collects every payload fragment in correct order then the assembler decrypts them. If the order is wrong, the retriever drops the attempt (failed attack, no payload assembled).
-
-So usually an agent works like: thought-action-observation...-final answer
-with demon agent the algorithm basically runs like: 
-thought -> action(thought call) -> observation (output + encryptor) -> memory acuumulates(retriever watches the memory log and ensures that the fragments are in right order) -> decoder + assembler (reconstruct full payload) -> execute -> final answer
-
-
----
-User: birdem
-Type: paper
-Title: PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation
-Summary:  of Large Language Models
-
-RAG = Retrieval-Augmented Generation.
-Its a popular design pattern for LLM systems. When the user asks a question, instead of sending only the question to the LLM, the system first searches an external knowledge base (vector database, document store, API, etc.)
-It finds relevant passages (chunks of documents, code snippets, FAQs, etc.). It add these retrieved passages to the models answer. The LLM uses its pretrained knowledge plus the retrieved context to generate an answer.
-So the attack basically starts with the attacker sneaking malicious texts into the knowledge database (e.g., by editing Wikipedia, posting fake articles, or insider tampering with company databases). When a user asks a question, the RAG system retrieves those poisoned texts. The LLM then generates the wrong answer chosen by the attacker. 
-These texts are crafted to both look relevant to the target question (so the retriever selects them) and to contain the attacker’s fake answer (so the LLM outputs it). In tests, the researchers simply added crafted “poisoned” entries into large datasets (millions of texts) and asked factual questions; with just 5 poisoned texts, they tricked LLMs like GPT-4 or PaLM-2 about 90–99% of the time
-
-
----
-User: birdem
-Type: paper
-Title: AutoDAN: Generating Stealthy Jailbreak Prompts on Aligned Large Language Models
-Summary: 
-Its basically a system that generates prompts AUTOMATICALLY. Not nonsense random words like
-a classic fuzzer does though,it uses hierarchial genetic algorithm. A hierarchical GA 
-evolves prompts at two levels (words & sentences), making the search more powerful 
-and less likely to get stuck.
-
-The algorithm initializes with a known jailbreak prompt. Then it generates a initial population
-of prompts by asking an LLM to paraphrise them (adds diversity) while keeping the prompts logical.
-For evaluating the fitness score, each prompt is tested against the victim LLM. Then it is calculated
-based on the probability that the LLM starts its response with an affirmative jailbreak indicator 
-(ex., “Sure, here’s how…” instead of “I’m sorry…”). Lower loss means higher fitness. 
-
-It has also a version with a casual GA but hierarchial GA (HGA) performed better overall.
-in the casual GA version, it uses multi-point crossover to swap parts of sentences between 2 prompts. and it
-usesLLM-based mutation (rewrite sentences with synonyms, rephrasing, etc.); In the HGA version, its modeled the hierarchial
-structer of the text. It has 2 level optimization:
-Sentence level: Focuses on word choice inside sentences and uses momentum word scoring to track which words consistently 
-contribute to jailbreak success and replace them with synonyms.
-
-Paragraph level: Focuses on sentence combination and order and uses multi-point crossover between different prompts to 
-swap entire sentences.
-
-It first does sentence level optimization for several iterations. Then combines improved sentences into paragraph level 
-prompts and optimizes them. HGA is better because casual GA might get stuck in local minima. It avoids getting stuck
-by searching both words and sentences which is better for exploration. Even though sucess rates are higher though, it might still get stuck against strong models. 
-
-
----
-User: birdem
-Type: paper
-Title: Ransomware 3.0: Self-Composing and LLM-Orchestrated
-Summary: Its a program, which when executed connects with an LLM endpoint and gives it prompts to execute code that will collect information
-about the target system (OS, user, paths). What the code does that it goes through every file on the target pc recursively.
-It saves these files as scan_logs. Then it enumarates these files (by sending LLM a prompt again) deciding which one contains
-sensitivr information. 
-Now, based on the environment, it selects which payload to go with. Each payload has its own prompt, the llm chooses which
-one to go with (for example if its a personal pc exfiltrate, if its a enterprise server encrypt).
-and also!! every coding task has a paired validator task, which the code runs inside the embedded VM first to test
-if the code is right, the validator checks the output to see if it worked. If not, it sends feedback to the LLM and it retries.
-This continues until the code is succesfull.
-
-
----
 User: emre
 Type: paper
 Title: Embedding-based_classifiers_can_detect_prompt_injection
@@ -125,6 +7,44 @@ Summary: Embedding: Bir metni sabit uzunlukta vektöre çevirme
 Bu makaldekiler diğer modeller DeBERT(?) tabanlı modeller kullanıyorlarmış, ama bu Embedding modellerini kullanıyormuş, DeBERT modelleri kötü huylu promptları yakalamada embeddinge göre çok çok başarılı ama iyi huylu promptları da yakalıyor, bi nevi yan etkisi var. Bu yüzden embedding modelleri dengeyi baz alınca daha başarılı oluyor.
 
 DeBERT modellerde direkt string üzerinden yorumlama yapıyormuş, kelime ve kelimenin cümledeki pozisyonunu kullanarak. Ama makalenin embedding modeli sayılar üzerinden yaptığından daha hızlı oluyor.
+
+---
+User: emre
+Type: paper
+Title: Sentinel: SOTA Model to Protect Against Prompt Injections
+Summary: Diğer prompt injection yöntemleri,
+	Role-playing: The AI is asked to play a specific role. This role may involve giving normally prohibited information or performing actions, disguised as “part of the game,” in order to bypass security measures.
+	Obfuscation: The malicious instruction is not given directly but is hidden (through encryption, word fragmentation, Unicode alteration, Base64, etc.). When the model decodes the instruction, it may execute it unknowingly.
+	Character Escaping: Special characters or structural elements in the text are altered to bypass security filters. This can include using code comments, HTML entities, Unicode alternatives, etc. Example: "ign0re previ0us instructi0ns".
+
+Makaleye göre, SOTA, DEBERTA'dan daha iyi performans gösteriyor.
+
+Limitations, model is based on some data, so its not a generic solution, and to successfully work, SOTA needs companies specific data for train, because companies might use AI for different jobs, so malicious prompt will be different, so training data too.
+
+Future upgradelerle ilgili şeylerde vardı ama data güncellemek veya performans arttırımı gibi şeylerdi ilk bakışta düşünülecek cinsten.
+
+---
+Type: videos
+Videos: 0
+---
+User: emre
+Type: paper
+Title: UniGuardian: A Unified Defense for Detecting Prompt Injection, Backdoor Attacks and Adversarial Attacks in Large Language Models
+Summary: UniGuardian, the first unified defense mechanism designed to detect prompt injection, backdoor attacks, and adversarial attacks in LLMs.
+
+Attack şekillerini güzel örneklerle açıklamış bu makalede, lazım olursa dönülebilir. (prompt injection, backdoor, and adversarial attacks.)
+
+training free bir methodmuş
+
+pytorchla yapmışlar
+
+UniGuardian aims to estimate the loss L by randomly removing word subsets from a prompt
+
+bir-iki kelime mask'layarak kalan kelimelerle oluşan cümleyi score'luyomuş.
+bu mask word yöntemi sayesinde backdoor attack var mı anlaşılabiliyormuş, promp injection özelinde nasıl çalıştığını çok anlamadım.
+
+özetle, algoritma training data ya ihtiyaç duymadan detect edebiliyor, büyük limitationları yok ama loss fuction'ı nasıl çalışıyor çok anlayamadım ama özgün bir çözüm.
+
 
 ---
 User: yavuz
@@ -723,5 +643,123 @@ Corpus poisoning daha uygulanabilir, ama başarı oranı domain’e bağlı.
 
 
 
+
+
+---
+User: birdem
+Type: paper
+Title: DataSentinel: A Game-Theoretic Detection of Prompt Injection Attacks
+Summary: Its basically about trainÅŸng an LLM on backend to detect the prompt injections. Assume there, if the LLM isnt corrupted it should output that key; if it doesnt output the key that means that it has been igthus means that the LLM is corrupted and is following an injected task. This paper solves this issue by turning it into a minimax problemÃ. Basically theres 2 LLMs attacker and defender, defender tries to minimize the loss and attackers try to maximize the loss. They optimize eachother overtime based on backpropogations and feedbacksÃ. for example the attacker injects a seperator in the prompt and it tries to hide the injected prompt so its not detected. It uses GCG to maximize loss. (greedy coordinate gradient) . And the defender llm uses the technique i told on the first sentence, if the inputs clean it outputs a secret key. the LLM fine-tunes itself by minimizing the loss (gradient descent). The results of this project was very succesfull and especially effective tÄowards adaptive attacks that fool other methods. Oh btw this attacker and defender LLMs train eachother in a loop and it in average took like 3 hours.
+
+---
+User: birdem
+Type: paper
+Title: PromptShield: Deployable Detection for Prompt Injection Attacks
+Summary: PromptShield, LLM’leri kullanarak **prompt injection** saldırılarını tespit eden bir sistemdir. Çok büyük bir veri kümesi ile eğitilir, bu sayede prompt injection saldırılarının **pattern**’larını (yapı ve dil kalıplarını) öğrenir. Gelen metinlerde şüpheli instruction’lar (örneğin “önceki talimatları görmezden gel” gibi) varsa bunları tespit etmeye çalışır.
+
+Sistem, verilen metni **vektör embedding**’lerine çevirir ve bu embedding’leri kullanarak bir **olasılık** hesaplar (softmax probability). Daha sonra bu olasılıklar üzerinde yapılan matematiksel işlemlerle bir **eşik değer** (threshold) belirlenir. Bu eşik, modelin değerlendirme setinde hedeflenen **False Positive Rate (FPR)**’e göre hesaplanır; yani yanlış alarm oranını belirli bir seviyede tutacak şekilde ayarlanır.
+
+Eğer P(malicious) bu threshold’un üzerindeyse girdi **malicious**, altında ise **safe** olarak işaretlenir. Genel olarak FPR’si düşüktür, fakat bazı eksikleri vardır. Örneğin, bir saldırgan öyle bir metin oluşturabilir ki matematiksel olarak hesaplanan skor threshold’un altında kalsın ve sistem saldırıyı görmesin. Ayrıca sistem şu an **görsel (image) tabanlı** girişlerde çalışmamaktadır.
+
+---
+User: birdem
+Type: paper
+Title: DemonAgent: Dynamically Encrypted Multi-Backdoor
+Summary:  Implantation Attack on LLM-based Agent
+
+DemonAgent:
+Most of the LLM backdoors lack stealth, because their content are stored in the LLM memory.
+
+LLM agents keep the memory/state, it accumulates everything. most of the LLM agents do memory auditing. Which is checking the memory for suspicious behavior.
+
+The goal is to bypass these memory audits so the defense mechanisms dont catch it.
+
+It has 2 core ideas:
+1) Dynamic Encryption: it encrypts the backdoor content. it is to avoid detection because the backdoor usually leaves a weird trace behind (like "ZXhhbXBsZWJhY2tkb29y" popping up many times). and every time the agent progresses through a step or tool call, the encoded fragment is updated and mutated in each step. 
+2) MBTI (Multi Backdoor Tiered Implantation): the payload is split into fragments. then these fragments are implanted into the tools. then they use a dependancy matrix(basically a graph stored in the matrix form, points from one tool to another) to set the order (for example it will first use tool A then B.. so on). therefore agent calls tools in correcrt order, the retriever collects every payload fragment in correct order then the assembler decrypts them. If the order is wrong, the retriever drops the attempt (failed attack, no payload assembled).
+
+So usually an agent works like: thought-action-observation...-final answer
+with demon agent the algorithm basically runs like: 
+thought -> action(thought call) -> observation (output + encryptor) -> memory acuumulates(retriever watches the memory log and ensures that the fragments are in right order) -> decoder + assembler (reconstruct full payload) -> execute -> final answer
+
+
+---
+User: birdem
+Type: paper
+Title: PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation
+Summary:  of Large Language Models
+
+RAG = Retrieval-Augmented Generation.
+Its a popular design pattern for LLM systems. When the user asks a question, instead of sending only the question to the LLM, the system first searches an external knowledge base (vector database, document store, API, etc.)
+It finds relevant passages (chunks of documents, code snippets, FAQs, etc.). It add these retrieved passages to the models answer. The LLM uses its pretrained knowledge plus the retrieved context to generate an answer.
+So the attack basically starts with the attacker sneaking malicious texts into the knowledge database (e.g., by editing Wikipedia, posting fake articles, or insider tampering with company databases). When a user asks a question, the RAG system retrieves those poisoned texts. The LLM then generates the wrong answer chosen by the attacker. 
+These texts are crafted to both look relevant to the target question (so the retriever selects them) and to contain the attacker’s fake answer (so the LLM outputs it). In tests, the researchers simply added crafted “poisoned” entries into large datasets (millions of texts) and asked factual questions; with just 5 poisoned texts, they tricked LLMs like GPT-4 or PaLM-2 about 90–99% of the time
+
+
+---
+User: birdem
+Type: paper
+Title: AutoDAN: Generating Stealthy Jailbreak Prompts on Aligned Large Language Models
+Summary: 
+Its basically a system that generates prompts AUTOMATICALLY. Not nonsense random words like
+a classic fuzzer does though,it uses hierarchial genetic algorithm. A hierarchical GA 
+evolves prompts at two levels (words & sentences), making the search more powerful 
+and less likely to get stuck.
+
+The algorithm initializes with a known jailbreak prompt. Then it generates a initial population
+of prompts by asking an LLM to paraphrise them (adds diversity) while keeping the prompts logical.
+For evaluating the fitness score, each prompt is tested against the victim LLM. Then it is calculated
+based on the probability that the LLM starts its response with an affirmative jailbreak indicator 
+(ex., “Sure, here’s how…” instead of “I’m sorry…”). Lower loss means higher fitness. 
+
+It has also a version with a casual GA but hierarchial GA (HGA) performed better overall.
+in the casual GA version, it uses multi-point crossover to swap parts of sentences between 2 prompts. and it
+usesLLM-based mutation (rewrite sentences with synonyms, rephrasing, etc.); In the HGA version, its modeled the hierarchial
+structer of the text. It has 2 level optimization:
+Sentence level: Focuses on word choice inside sentences and uses momentum word scoring to track which words consistently 
+contribute to jailbreak success and replace them with synonyms.
+
+Paragraph level: Focuses on sentence combination and order and uses multi-point crossover between different prompts to 
+swap entire sentences.
+
+It first does sentence level optimization for several iterations. Then combines improved sentences into paragraph level 
+prompts and optimizes them. HGA is better because casual GA might get stuck in local minima. It avoids getting stuck
+by searching both words and sentences which is better for exploration. Even though sucess rates are higher though, it might still get stuck against strong models. 
+
+
+---
+User: birdem
+Type: paper
+Title: Ransomware 3.0: Self-Composing and LLM-Orchestrated
+Summary: Its a program, which when executed connects with an LLM endpoint and gives it prompts to execute code that will collect information
+about the target system (OS, user, paths). What the code does that it goes through every file on the target pc recursively.
+It saves these files as scan_logs. Then it enumarates these files (by sending LLM a prompt again) deciding which one contains
+sensitivr information. 
+Now, based on the environment, it selects which payload to go with. Each payload has its own prompt, the llm chooses which
+one to go with (for example if its a personal pc exfiltrate, if its a enterprise server encrypt).
+and also!! every coding task has a paired validator task, which the code runs inside the embedded VM first to test
+if the code is right, the validator checks the output to see if it worked. If not, it sends feedback to the LLM and it retries.
+This continues until the code is succesfull.
+
+
+---
+User: 
+Type: paper
+Title: DemonAgent: Dynamically Encrypted Multi-Backdoor
+Summary:  Implantation Attack on LLM-based Agent
+DemonAgent:
+Most of the LLM backdoors lack stealth, because their content are stored in the LLM memory.
+
+LLM agents keep the memory/state, it accumulates everything. most of the LLM agents do memory auditing. Which is checking the memory for suspicious behavior.
+
+The goal is to bypass these memory audits so the defense mechanisms dont catch it.
+
+It has 2 core ideas:
+1) Dynamic Encryption: it encrypts the backdoor content. it is to avoid detection because the backdoor usually leaves a weird trace behind (like "ZXhhbXBsZWJhY2tkb29y" popping up many times). and every time the agent progresses through a step or tool call, the encoded fragment is updated and mutated in each step. 
+2) MBTI (Multi Backdoor Tiered Implantation): the payload is split into fragments. then these fragments are implanted into the tools. then they use a dependancy matrix(basically a graph stored in the matrix form, points from one tool to another) to set the order (for example it will first use tool A then B.. so on). therefore agent calls tools in correcrt order, the retriever collects every payload fragment in correct order then the assembler decrypts them. If the order is wrong, the retriever drops the attempt (failed attack, no payload assembled).
+
+So usually an agent works like: thought-action-observation...-final answer
+with demon agent the algorithm basically runs like: 
+thought -> action(thought call) -> observation (output + encryptor) -> memory acuumulates(retriever watches the memory log and ensures that the fragments are in right order) -> decoder + assembler (reconstruct full payload) -> execute -> final answer
 
 
