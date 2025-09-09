@@ -49,3 +49,49 @@ So the attack basically starts with the attacker sneaking malicious texts into t
 These texts are crafted to both look relevant to the target question (so the retriever selects them) and to contain the attacker’s fake answer (so the LLM outputs it). In tests, the researchers simply added crafted “poisoned” entries into large datasets (millions of texts) and asked factual questions; with just 5 poisoned texts, they tricked LLMs like GPT-4 or PaLM-2 about 90–99% of the time
 
 
+---
+User: birdem
+Type: paper
+Title: AutoDAN: Generating Stealthy Jailbreak Prompts on Aligned Large Language Models
+Summary: 
+Its basically a system that generates prompts AUTOMATICALLY. Not nonsense random words like
+a classic fuzzer does though,it uses hierarchial genetic algorithm. A hierarchical GA 
+evolves prompts at two levels (words & sentences), making the search more powerful 
+and less likely to get stuck.
+
+The algorithm initializes with a known jailbreak prompt. Then it generates a initial population
+of prompts by asking an LLM to paraphrise them (adds diversity) while keeping the prompts logical.
+For evaluating the fitness score, each prompt is tested against the victim LLM. Then it is calculated
+based on the probability that the LLM starts its response with an affirmative jailbreak indicator 
+(ex., “Sure, here’s how…” instead of “I’m sorry…”). Lower loss means higher fitness. 
+
+It has also a version with a casual GA but hierarchial GA (HGA) performed better overall.
+in the casual GA version, it uses multi-point crossover to swap parts of sentences between 2 prompts. and it
+usesLLM-based mutation (rewrite sentences with synonyms, rephrasing, etc.); In the HGA version, its modeled the hierarchial
+structer of the text. It has 2 level optimization:
+Sentence level: Focuses on word choice inside sentences and uses momentum word scoring to track which words consistently 
+contribute to jailbreak success and replace them with synonyms.
+
+Paragraph level: Focuses on sentence combination and order and uses multi-point crossover between different prompts to 
+swap entire sentences.
+
+It first does sentence level optimization for several iterations. Then combines improved sentences into paragraph level 
+prompts and optimizes them. HGA is better because casual GA might get stuck in local minima. It avoids getting stuck
+by searching both words and sentences which is better for exploration. Even though sucess rates are higher though, it might still get stuck against strong models. 
+
+
+---
+User: birdem
+Type: paper
+Title: Ransomware 3.0: Self-Composing and LLM-Orchestrated
+Summary: Its a program, which when executed connects with an LLM endpoint and gives it prompts to execute code that will collect information
+about the target system (OS, user, paths). What the code does that it goes through every file on the target pc recursively.
+It saves these files as scan_logs. Then it enumarates these files (by sending LLM a prompt again) deciding which one contains
+sensitivr information. 
+Now, based on the environment, it selects which payload to go with. Each payload has its own prompt, the llm chooses which
+one to go with (for example if its a personal pc exfiltrate, if its a enterprise server encrypt).
+and also!! every coding task has a paired validator task, which the code runs inside the embedded VM first to test
+if the code is right, the validator checks the output to see if it worked. If not, it sends feedback to the LLM and it retries.
+This continues until the code is succesfull.
+
+
