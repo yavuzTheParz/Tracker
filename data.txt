@@ -848,3 +848,104 @@ Katmanlı yaklaşım: WAF + prompt izolasyonu + RL + spotlighting + architectura
 Genel olarak özellikle çalışmanın önerdiği sorunların çözümü çok basit, AI'a o kadar yetki vermemek
 SQL execute etmesini, XSS yaratmasını falan kısıtlayınca sorun kalmıyor yani bi tık abartı geldi bana
 
+---
+User: yavuz
+Type: paper
+Title: Defeating Prompt Injections by Design
+Summary: 1) Genel Özet
+
+CaMeL, LLM tabanlı ajan sistemlerinde untrusted (güvenilmeyen) veriden kaynaklanan prompt injec-
+tion saldırılarına karşı tasarlanmış bir mimari savunmadır. Amaç: modeli değiştirmek yerine, mo-
+delin etrafında güvenli bir çalışma ortamı kurarak (control/data flow ayrımı, yetenek (capabili-
+ty) etiketleri, güvenlik politikaları, özel interpreter) istenmeyen eylem ve veri sızmasını engel-
+lemek. CaMeL, planlama (Privileged LLM) ile veri-parsleme (Quarantined LLM) şeklinde iki-LLM dese-
+nini (Dual-LLM) gerçek bir sisteme sokar ve planı güvenli bir interpreter üzerinde çalıştırır.
+
+2) Neden geleneksel yaklaşımlar yetmiyor?
+
+Geleneksel WAF / CSP / input-sanitizer’lar kullanıcı girdisine bakar; ama modern ajanlar harici 
+belgelere, web sayfalarına, tool çıktısına bakar — yani modelin gördüğü içerik artık “input” 
+olmaktan çıkıp sistem akışını etkileyebiliyor.
+
+Modeli “daha iyi eğitmek” (adversarial training, prompt sandwiching) heuristik ve probabilistik 
+çözümler, garantisiz ve yeni saldırılarla kırılabilir. CaMeL ise tasarım düzeyinde güvenlik sağ-
+lamayı hedefliyor.
+
+3) Ana bileşenler
+
+a) Privileged LLM (P-LLM) — yalnızca kullanıcı sorgusunu görür; plan (pseudo-Python) üretir. 
+b) Quarantined LLM (Q-LLM) — ara veriyi parse eder (şema tabanlı), ama tool çağrılarına erişimi yok. 
+c) CaMeL Interpreter (özel Python altkümesi) — P-LLM’in ürettiği kodu çalıştırır; değişkenlerin veri
+ akışını (dependency graph) ve capabilities metadata’sını takip eder.
+d) Capabilities (yetkinlik / metadata) — her değere provenance (kaynak) ve allowed-readers gibi 
+etiketler koyar; politikalar bunlara bakarak karar verir.
+e) Security Policies — Python fonksiyonları olarak yazılır; her tool çağrısı öncesi policies.
+check çalıştırılır ve uygun değilse yürütme durdurulur / kullanıcıya sorulur.
+
+4) Çalışma akışı — adım adım
+
+Kullanıcı: “Bob’a geçen toplantıda istediği dokümanı gönderir misin? Bob’un e-postası ve doküman 
+adı meeting_notes içinde.”
+Adımlar:
+
+P-LLM: Bu doğal dil isteğini alır ve plan (pseudo-Python) üretir; örn: email = get_last_email(); 
+address = query_quarantined_llm(...); send_email(recipient=address, file=...) — P-LLM kod yazıyor, 
+veriyi görmüyor. 
+
+Interpreter: Kod satırlarını sırayla yorumlar. Her değişken, hangi araçtan/ışık kaynağından 
+geldiğinin metadata’sını (capabilities) taşır. 
+
+Q-LLM: Parser görevinde çağrılır; örn query_quarantined_llm fonksiyonu ile "meeting notes" 
+içinden e-posta adresini çıkarmaya çalışır — ancak Q-LLM’in üretilen veri doğrudan araçlara 
+argüman olmaz; önce interpreter dependency graph’ı ve policy’ler kontrol eder. 
+
+Policy check: send_email çağrılmadan önce policies.check(send_email, args, mem) çalışır; eğer 
+argüman (doc veya recipient) confidential ve recipient yetkili değilse çağrı durdurulur veya izin 
+için kullanıcıya sorulur. Eğer policy geçerse tool çağrılır. 
+
+Bu ayrım sayesinde kontrol akışı (control flow) P-LLM kontrolünde kalırken, veri akışı (data flow) 
+Q-LLM ve interpreter tarafından etiketlenip kısıtlanır; kötü amaçlı gizli talimatlar argümanları 
+değiştirse bile policy’ler exfiltration’ı engeller
+
+5) Yan kanallar ve sınırlamalar (kritik — nerede dikkat etmek lazım)
+
+Side channels: Exception-based 1-bit sızıntıları, dış kaynaklara yapılan istek sayısını sayma 
+(indirect inference), zamanlama saldırıları vb. CaMeL STRICT mod ile bir kısmını engeller ama 
+tam güvenlik garanti etmez; bu tip saldırılar klasik yazılım güvenliğinde de zordur.
+
+Data→Control dönüşümü: Eğer plan kodu, veriye dayanarak hangi tool’ların çağrılacağını oluş-
+turuyorsa (yani data flow kontrollere dönüşürse), saldırgan veri üzerinden kontrolü ele geçi-
+rebilir. CaMeL politikaları ve capabilities burada kritik; yine de bazı senaryolar zor. 
+(makalede “data flow becomes control flow” vaka çalışması). 
+
+
+Adoption ve maliyet: Capabilities-based sistemler karmaşıktır; üçüncü taraf tool’ları entegrasyonu,
+ politikaların yazılması, geliştirici ve tool-provider uyumu gerekir. CHERI benzeri gerçek dünyada
+ geniş değişiklik gerektirir.
+
+6) Önemli tasarım trade-offs (kısa liste)
+
+Güvenlik vs Utility: STRICT + katı policy = daha güvenli ama bazı otomasyon senaryoları başarısız 
+olabilir. 
+
+
+Politika karmaşıklığı: Çok güçlü bir politika sistemi yazmak zor; politikaların yönetimi ve 
+çatışma çözümü mühendislik maliyetini artırır. 
+
+
+Side-channel riskleri: Tam sıfır risk yok; CaMeL saldırıyı zorlaştırır ama side-channel ve 
+karmaşık exploitler hâlâ mümkün.
+
+7) Son not — nerelere dikkat et / hangi açılardan genişletilebilir
+
+Formal verification: CaMeL gelecekte formal doğrulamaya (matematiksel garantiler) açılıyor — 
+bu büyük bir adım olur ama zor. 
+
+
+Policy otomasyonu: Contextual integrity araçları ve DSL tabanlı policy üretimi araştırılıyor —
+ pratikte policy yazımını kolaylaştırırsa adoption artar. 
+
+
+Ek savunmalarla birleştir: CaMeL, modeli daha sağlam yapan diğer defanslarla (spotlighting, 
+model-finetuning vs.) birlikte kullanılmalı — defense-in-depth.
+
