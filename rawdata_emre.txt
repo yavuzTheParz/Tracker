@@ -46,3 +46,26 @@ bu mask word yöntemi sayesinde backdoor attack var mı anlaşılabiliyormuş, p
 özetle, algoritma training data ya ihtiyaç duymadan detect edebiliyor, büyük limitationları yok ama loss fuction'ı nasıl çalışıyor çok anlayamadım ama özgün bir çözüm.
 
 
+---
+User: emre
+Type: paper
+Title: ONION: A Simple and Effective Defense Against Textual Backdoor Attacks
+Summary: writerlara göre backdoor triggerlayan kelime cümlenin akıcılığını bozuyor olmalı ve o kelimesiz cümle daha akıcı olmalı
+
+Trigger word'ü bulma formülleri gayet basit ve anlaşılır, methodology kısmının başında anlatılıyor.
+
+genetic algoritm lede yapmışlar ama onion kadar efficent olmamış.
+
+Mukayese edilen alanlarda rakiplerine göre gayet iyiymiş, hepsi öyle zaten.
+
+hem pre-training hem de post-training kısmında çalışabiliyor.
+
+Limitations:
+-Sadece backdoor'lar için bahsedilmiş, demekki diğer prompt trigger attacklar için çalışmıyor.
+-2021 yılında yapılmış, yani bence görece eski sayılır.
+-text based backdoor attacklar için çalışıyor. Ve basit düzeyde ataklar için çalışıyor.
+
+Zayıf noktaları:
+-context-aware sentence insertion: Eklenen cümle metne çok uyumlu görünüyor.
+-syntactic structures: Cümlenin gramer yapısını belirli bir şekilde düzenlemek.
+
