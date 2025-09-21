@@ -597,3 +597,65 @@ Corpus poisoning daha uygulanabilir, ama başarı oranı domain’e bağlı.
 
 
 
+---
+User: yavuz
+Type: paper
+Title: Prompt Injection 2.0: Hybrid AI Threats
+Summary: genel olarak prompt injectionların 2025teki durumunu anlatan bir makale.
+web güvenlik saldırılarıyla birleştirilmiş pro-injection (XSS SQL falan)
+
+2. Tehdit Türleri (Yeni Taksonomi)
+
+Makale üç eksende sınıflandırıyor:
+
+a) Teslim Yöntemine Göre (Delivery Vector)
+
+Doğrudan injection: Kullanıcı girdisinde direkt talimat (“ignore previous instructions”).
+
+Dolaylı injection: AI’nin işlediği web sayfası, PDF, e-posta, API gibi dış kaynaklara gizlenen talimatlar.
+
+b) Saldırı Türüne Göre (Attack Modality)
+
+Multimodal injection: Görsel, ses, video içine gömülü komutlar (OCR, steganografi).
+
+Kod injection: AI’nin zararlı SQL, Python, konfigürasyon üretmeye yönlendirilmesi.
+
+Hibrit tehditler: Prompt injection + XSS, CSRF, SQLi birleşimi.
+
+c) Yayılım Davranışına Göre (Propagation)
+
+Recursive injection: AI kendi çıktısında yeni prompt’lar üretip kalıcı hale geliyor.
+
+AI worms: Çok ajanlı sistemlerde kendini kopyalayan solucanlar (ör. Morris-II worm).
+
+3. Hibrit Tehdit Senaryoları
+
+XSS + Prompt Injection: AI, base64 çözüp zararlı <script> üretiyor, WAF atlatılıyor.
+
+CSRF + AI Agents: AI ajanı, kullanıcı ayrıcalıklarıyla izinsiz işlemler yapıyor.
+
+P2SQL (Prompt to SQL Injection): AI, masum görünen prompt’tan tehlikeli SQL sorguları üretiyor.
+
+Multi-agent propagation: Bulaşan bir ajan diğerlerine kötü prompt’ları yayabiliyor.
+
+4. Savunma ve Mitigasyon
+
+Preamble yöntemleri:
+
+Sınıflandırıcı tabanlı input filtreleme
+
+Token-tagging (trusted/untrusted işaretleme)
+
+RL tabanlı eğitimle zararlı komutları ayırt etme
+
+CaMeL framework: Kontrol akışını (control flow) veri akışından (data flow) ayırıyor.
+
+Spotlighting: Kullanıcı girdilerini işaretleyerek (delimiter, formatlama) güvenlik sağlama.
+
+Katmanlı yaklaşım: WAF + prompt izolasyonu + RL + spotlighting + architectural separation.
+
+(!!!!!BU GÜVENLİK YÖNTEMLERİNİN ARAŞITIRLMASINI ÖNERİYORUM!!!!!)
+
+Genel olarak özellikle çalışmanın önerdiği sorunların çözümü çok basit, AI'a o kadar yetki vermemek
+SQL execute etmesini, XSS yaratmasını falan kısıtlayınca sorun kalmıyor yani bi tık abartı geldi bana
+
