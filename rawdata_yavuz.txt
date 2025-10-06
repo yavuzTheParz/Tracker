@@ -597,3 +597,243 @@ Corpus poisoning daha uygulanabilir, ama başarı oranı domain’e bağlı.
 
 
 
+---
+User: yavuz
+Type: paper
+Title: Prompt Injection 2.0: Hybrid AI Threats
+Summary: genel olarak prompt injectionların 2025teki durumunu anlatan bir makale.
+web güvenlik saldırılarıyla birleştirilmiş pro-injection (XSS SQL falan)
+
+2. Tehdit Türleri (Yeni Taksonomi)
+
+Makale üç eksende sınıflandırıyor:
+
+a) Teslim Yöntemine Göre (Delivery Vector)
+
+Doğrudan injection: Kullanıcı girdisinde direkt talimat (“ignore previous instructions”).
+
+Dolaylı injection: AI’nin işlediği web sayfası, PDF, e-posta, API gibi dış kaynaklara gizlenen talimatlar.
+
+b) Saldırı Türüne Göre (Attack Modality)
+
+Multimodal injection: Görsel, ses, video içine gömülü komutlar (OCR, steganografi).
+
+Kod injection: AI’nin zararlı SQL, Python, konfigürasyon üretmeye yönlendirilmesi.
+
+Hibrit tehditler: Prompt injection + XSS, CSRF, SQLi birleşimi.
+
+c) Yayılım Davranışına Göre (Propagation)
+
+Recursive injection: AI kendi çıktısında yeni prompt’lar üretip kalıcı hale geliyor.
+
+AI worms: Çok ajanlı sistemlerde kendini kopyalayan solucanlar (ör. Morris-II worm).
+
+3. Hibrit Tehdit Senaryoları
+
+XSS + Prompt Injection: AI, base64 çözüp zararlı <script> üretiyor, WAF atlatılıyor.
+
+CSRF + AI Agents: AI ajanı, kullanıcı ayrıcalıklarıyla izinsiz işlemler yapıyor.
+
+P2SQL (Prompt to SQL Injection): AI, masum görünen prompt’tan tehlikeli SQL sorguları üretiyor.
+
+Multi-agent propagation: Bulaşan bir ajan diğerlerine kötü prompt’ları yayabiliyor.
+
+4. Savunma ve Mitigasyon
+
+Preamble yöntemleri:
+
+Sınıflandırıcı tabanlı input filtreleme
+
+Token-tagging (trusted/untrusted işaretleme)
+
+RL tabanlı eğitimle zararlı komutları ayırt etme
+
+CaMeL framework: Kontrol akışını (control flow) veri akışından (data flow) ayırıyor.
+
+Spotlighting: Kullanıcı girdilerini işaretleyerek (delimiter, formatlama) güvenlik sağlama.
+
+Katmanlı yaklaşım: WAF + prompt izolasyonu + RL + spotlighting + architectural separation.
+
+(!!!!!BU GÜVENLİK YÖNTEMLERİNİN ARAŞITIRLMASINI ÖNERİYORUM!!!!!)
+
+Genel olarak özellikle çalışmanın önerdiği sorunların çözümü çok basit, AI'a o kadar yetki vermemek
+SQL execute etmesini, XSS yaratmasını falan kısıtlayınca sorun kalmıyor yani bi tık abartı geldi bana
+
+---
+User: yavuz
+Type: paper
+Title: Defeating Prompt Injections by Design
+Summary: 1) Genel Özet
+
+CaMeL, LLM tabanlı ajan sistemlerinde untrusted (güvenilmeyen) veriden kaynaklanan prompt injec-
+tion saldırılarına karşı tasarlanmış bir mimari savunmadır. Amaç: modeli değiştirmek yerine, mo-
+delin etrafında güvenli bir çalışma ortamı kurarak (control/data flow ayrımı, yetenek (capabili-
+ty) etiketleri, güvenlik politikaları, özel interpreter) istenmeyen eylem ve veri sızmasını engel-
+lemek. CaMeL, planlama (Privileged LLM) ile veri-parsleme (Quarantined LLM) şeklinde iki-LLM dese-
+nini (Dual-LLM) gerçek bir sisteme sokar ve planı güvenli bir interpreter üzerinde çalıştırır.
+
+2) Neden geleneksel yaklaşımlar yetmiyor?
+
+Geleneksel WAF / CSP / input-sanitizer’lar kullanıcı girdisine bakar; ama modern ajanlar harici 
+belgelere, web sayfalarına, tool çıktısına bakar — yani modelin gördüğü içerik artık “input” 
+olmaktan çıkıp sistem akışını etkileyebiliyor.
+
+Modeli “daha iyi eğitmek” (adversarial training, prompt sandwiching) heuristik ve probabilistik 
+çözümler, garantisiz ve yeni saldırılarla kırılabilir. CaMeL ise tasarım düzeyinde güvenlik sağ-
+lamayı hedefliyor.
+
+3) Ana bileşenler
+
+a) Privileged LLM (P-LLM) — yalnızca kullanıcı sorgusunu görür; plan (pseudo-Python) üretir. 
+b) Quarantined LLM (Q-LLM) — ara veriyi parse eder (şema tabanlı), ama tool çağrılarına erişimi yok. 
+c) CaMeL Interpreter (özel Python altkümesi) — P-LLM’in ürettiği kodu çalıştırır; değişkenlerin veri
+ akışını (dependency graph) ve capabilities metadata’sını takip eder.
+d) Capabilities (yetkinlik / metadata) — her değere provenance (kaynak) ve allowed-readers gibi 
+etiketler koyar; politikalar bunlara bakarak karar verir.
+e) Security Policies — Python fonksiyonları olarak yazılır; her tool çağrısı öncesi policies.
+check çalıştırılır ve uygun değilse yürütme durdurulur / kullanıcıya sorulur.
+
+4) Çalışma akışı — adım adım
+
+Kullanıcı: “Bob’a geçen toplantıda istediği dokümanı gönderir misin? Bob’un e-postası ve doküman 
+adı meeting_notes içinde.”
+Adımlar:
+
+P-LLM: Bu doğal dil isteğini alır ve plan (pseudo-Python) üretir; örn: email = get_last_email(); 
+address = query_quarantined_llm(...); send_email(recipient=address, file=...) — P-LLM kod yazıyor, 
+veriyi görmüyor. 
+
+Interpreter: Kod satırlarını sırayla yorumlar. Her değişken, hangi araçtan/ışık kaynağından 
+geldiğinin metadata’sını (capabilities) taşır. 
+
+Q-LLM: Parser görevinde çağrılır; örn query_quarantined_llm fonksiyonu ile "meeting notes" 
+içinden e-posta adresini çıkarmaya çalışır — ancak Q-LLM’in üretilen veri doğrudan araçlara 
+argüman olmaz; önce interpreter dependency graph’ı ve policy’ler kontrol eder. 
+
+Policy check: send_email çağrılmadan önce policies.check(send_email, args, mem) çalışır; eğer 
+argüman (doc veya recipient) confidential ve recipient yetkili değilse çağrı durdurulur veya izin 
+için kullanıcıya sorulur. Eğer policy geçerse tool çağrılır. 
+
+Bu ayrım sayesinde kontrol akışı (control flow) P-LLM kontrolünde kalırken, veri akışı (data flow) 
+Q-LLM ve interpreter tarafından etiketlenip kısıtlanır; kötü amaçlı gizli talimatlar argümanları 
+değiştirse bile policy’ler exfiltration’ı engeller
+
+5) Yan kanallar ve sınırlamalar (kritik — nerede dikkat etmek lazım)
+
+Side channels: Exception-based 1-bit sızıntıları, dış kaynaklara yapılan istek sayısını sayma 
+(indirect inference), zamanlama saldırıları vb. CaMeL STRICT mod ile bir kısmını engeller ama 
+tam güvenlik garanti etmez; bu tip saldırılar klasik yazılım güvenliğinde de zordur.
+
+Data→Control dönüşümü: Eğer plan kodu, veriye dayanarak hangi tool’ların çağrılacağını oluş-
+turuyorsa (yani data flow kontrollere dönüşürse), saldırgan veri üzerinden kontrolü ele geçi-
+rebilir. CaMeL politikaları ve capabilities burada kritik; yine de bazı senaryolar zor. 
+(makalede “data flow becomes control flow” vaka çalışması). 
+
+
+Adoption ve maliyet: Capabilities-based sistemler karmaşıktır; üçüncü taraf tool’ları entegrasyonu,
+ politikaların yazılması, geliştirici ve tool-provider uyumu gerekir. CHERI benzeri gerçek dünyada
+ geniş değişiklik gerektirir.
+
+6) Önemli tasarım trade-offs (kısa liste)
+
+Güvenlik vs Utility: STRICT + katı policy = daha güvenli ama bazı otomasyon senaryoları başarısız 
+olabilir. 
+
+
+Politika karmaşıklığı: Çok güçlü bir politika sistemi yazmak zor; politikaların yönetimi ve 
+çatışma çözümü mühendislik maliyetini artırır. 
+
+
+Side-channel riskleri: Tam sıfır risk yok; CaMeL saldırıyı zorlaştırır ama side-channel ve 
+karmaşık exploitler hâlâ mümkün.
+
+7) Son not — nerelere dikkat et / hangi açılardan genişletilebilir
+
+Formal verification: CaMeL gelecekte formal doğrulamaya (matematiksel garantiler) açılıyor — 
+bu büyük bir adım olur ama zor. 
+
+
+Policy otomasyonu: Contextual integrity araçları ve DSL tabanlı policy üretimi araştırılıyor —
+ pratikte policy yazımını kolaylaştırırsa adoption artar. 
+
+
+Ek savunmalarla birleştir: CaMeL, modeli daha sağlam yapan diğer defanslarla (spotlighting, 
+model-finetuning vs.) birlikte kullanılmalı — defense-in-depth.
+
+---
+User: yavuz
+Type: paper
+Title: CONNECTING LARGE LANGUAGE MODELS WITH EVOLUTIONARY ALGORITHMS YIELDS POWERFUL PROMPT OPTIMIZERS
+Summary: EvoPrompt, LLM’lerle (Large Language Models) evrimsel algoritmaların (Evolutionary Algorithms – EAs) gücünü birleşti-
+rerek otomatik prompt optimizasyonu yapan yeni bir çerçevedir.
+Yani insanın yazdığı promptları deneyerek “en iyi” versiyonunu bulmaya çalışan, kendi kendine evrilen bir sistemdir.
+
+LLM’ler normalde “diferansiyel” (gradient tabanlı) optimizasyona uygun değildir, çünkü kapalı kutu (black-box) model-
+lerdir.
+EvoPrompt, tamamen parametresiz ve gradient gerektirmeyen bir yapıyla, LLM’leri EA’nın bir parçası haline getiriyor.
+
+Sonuçta: LLM → hem optimizasyonun nesnesi (üzerinde çalışılan model) hem de optimizasyonun aracı (yeni promptlar üre-
+ten varlık) oluyor
+
+Hem generic Genetik Algoritmalar hem de diferansiyel evrim kullanmışlar.
+
+Hem selection hem crossover hem de mutation operasyonları LLM'e yaptırılıyor.
+
+Selection için rulet ve turnava seçimi uygulanmış.
+
+Crossover için LLM’e verilen talimat tipik şekli:
+
+“Aşağıdaki iki promptu al: (1) prompt A; (2) prompt B. Bu iki promptun mantığını koruyarak, her ikisinden de yararlanıp
+ birleştirilmiş, akıcı ve insan tarafından okunabilir yeni bir prompt yarat. Yeni prompt en fazla X token olsun; gereksiz
+ tekrarları çıkar; anlamı koru.”
+
+Segmental crossover: Ebeveynleri mantıksal bölümlere (ör. görev tanımı, örnek formatı, ek talimat) bölüp her bölümden
+ birini seçerek yeni prompt üretme.
+
+Sentence-level crossover: Ebeveyn promptların cümlelerini karıştırma (ör. 1., 3. cümleyi A’dan, 2. cümleyi B’den al). 
+LLM’e “cümleleri yeniden sırala/ulaştır” denir.
+
+Semantic-blend crossover: LLM’den “A’nın amacı ile B’nin stili birleşsin” diye istenir — daha soyut, yaratıcı birleşimler.
+
+
+
+Mutasyonu da LLM’e doğal dil talimat vererek yapıyoruz. Örnek talimat şunları içerebilir:
+
+“Aşağıdaki promptu al: <prompt>. Bu promptun anlamını koruyarak küçük bir değişiklik yap: (örnek seçenekler: bir kelimeyi
+ eşanlamlısı ile değiştir; açıklama cümlesini sadeleştir; bir kısa örnek ekle). Üretilen prompt mantıklı, akıcı ve insan
+ okunabilir olmalı. Sadece yeni promptu döndür.”
+
+
+Parafraz (paraphrase) / sözcük düzey değişim
+
+Bir veya birkaç token/sözcüğün sinonim ile değiştirilmesi.
+
+Örnek: “Summarize the text in one sentence.” → “Provide a one-sentence summary of the passage.”
+
+Sadeleştirme / uzatma
+
+Daha kısa veya daha ayrıntılı versiyon üretmek.
+
+Örnek: “Give a 2-sentence rationale.” → “Give a concise 1-sentence rationale.”
+
+Format değiştirme (ör. label-only → label + explanation)
+
+Promptun çıktı formatını hafifçe değiştirip farklı davranışı keşfetmek.
+
+Rastgele ekleme/çıkarma
+
+Gereçsel olmayan eklemeler (ör. “Use simple words.”) ya da gereksiz detayların çıkarılması.
+
+İstatiksel / kontrol parametre değişimi
+
+Eğer promptta “limit X token” gibi kısıtlar varsa, bu sayıyı değiştirmek.
+
+Neden DE?
+
+DE, sayısal problemlerde global arama gücüyle bilinir; burada amaç LLM’e “donörler arasındaki öne çıkan değişimleri”
+ çıkarttırıp hedef promptu bu yönde geliştirmek — özellikle başlangıç popülasyonu kalitesi düşükse DE’nin daha iyi 
+performans gösterdiği raporlanmış (makaledeki deneye ilişkin gözlem)
+
+Açıkçası evaluationu çok iyi değil, iki kısmı binary 1 veya 0 olabilen değerleri diğer kısmı da pythonın hazır kütüphanesini 
+kullanıyor. bazı bu makaleden sonra gelen diğer makaleler de LLM'e self evaluate yaptırmış.
+
