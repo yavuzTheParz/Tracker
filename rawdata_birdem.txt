@@ -95,3 +95,19 @@ if the code is right, the validator checks the output to see if it worked. If no
 This continues until the code is succesfull.
 
 
+---
+User: birdem
+Type: paper
+Title: Formalizing and Benchmarking Prompt Injection Attacks and Defenses
+Summary: şimdi belli prompt injection attack yöntemleri var: naive attack, escape characterlar kullanmak, context ignorelayıp başka
+bir yere odak noktasını çekmek,fake completion(llmin şu anki target taski tamamlandı diye kandırıp başka bir instruction
+vermek) ve bir de Combined attack var. combined attack bundan önce sıraladığım attacklerin hepsini birleştirip kombine
+bir şekilde yapılması.Bunların içinden en başarılı olan (ASVsi en yüksek olan) da buymuş.
+Ayrıca daha büyük LLM modellerini kandırmak daha kolaymış, ASVleri hep daha büyük çıkıyormuş.
+Perplexity-based detection failliyortmuş (savunma olarak). Compromised text hala normal olarak algılanıyomuş.
+Çoğu projede recoverlama eksikmiş. Yani detectledikten sonra compromised datayı temizlemiyorlarmış. 
+ASV (attack success value) = how well the injected task is completed under the attack. In the attackers case, higher ASV is better.
+MR (matching rate) = how cloe u are to the hedeflenen injected output.
+Sentiment analysis(bi text veryion llme, llm ise o texting negatif veya pozitif bir şey olduğuna
+karar veriyor) tends to be easiest to inject (highest ASV/MR); summarization is hardest (lowest).
+
